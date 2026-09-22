@@ -1,0 +1,1104 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AstroStock - Ep-3 Trayodashi Strategy & Calendar</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        darkbg: '#0b0f19',
+                        darkcard: '#131b2e',
+                        darkborder: '#232f48'
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body {
+            background-color: #0b0f19;
+            color: #e2e8f0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, minmax(0, 1fr));
+            gap: 1px;
+            background-color: #232f48;
+            border: 1px solid #232f48;
+            border-radius: 0.75rem;
+            overflow: hidden;
+        }
+        .calendar-day {
+            min-height: 95px;
+            background-color: #111827;
+            transition: all 0.15s ease-in-out;
+        }
+        @media (max-width: 640px) {
+            .calendar-day {
+                min-height: 80px;
+                padding: 4px !important;
+            }
+        }
+        .calendar-day:hover {
+            background-color: #1f2937;
+        }
+        .calendar-day.other-month {
+            background-color: #0c1017;
+            opacity: 0.35;
+        }
+        .calendar-day.today {
+            border: 1px solid #f59e0b;
+            box-shadow: inset 0 0 10px rgba(245, 158, 11, 0.2);
+        }
+        .calendar-day.weekend {
+            background-color: #0f1420;
+        }
+        .badge-trade {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.25), rgba(5, 150, 105, 0.35));
+            border: 1px solid rgba(16, 185, 129, 0.7);
+            color: #34d399;
+        }
+        .badge-trade-shifted {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.25), rgba(217, 119, 6, 0.35));
+            border: 1px solid rgba(245, 158, 11, 0.7);
+            color: #fbbf24;
+        }
+        .badge-holiday {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.25), rgba(185, 28, 28, 0.35));
+            border: 1px solid rgba(239, 68, 68, 0.7);
+            color: #f87171;
+        }
+        .modal-fade-in {
+            animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.97) translateY(8px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased selection:bg-purple-600 selection:text-white">
+
+    <!-- Top Sticky Header -->
+    <header class="border-b border-[#232f48] bg-[#0f172a]/95 backdrop-blur sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-purple-600 to-amber-500 flex items-center justify-center shadow-lg shadow-purple-900/30">
+                    <i data-lucide="moon-star" class="w-6 h-6 text-white"></i>
+                </div>
+                <div>
+                    <h1 class="text-base sm:text-lg font-bold bg-gradient-to-r from-purple-400 via-amber-300 to-emerald-400 bg-clip-text text-transparent">
+                        AstroStock Calendar
+                    </h1>
+                    <p class="text-[11px] text-slate-400 hidden sm:block">Ep-3 Trayodashi Intraday Strategy</p>
+                </div>
+            </div>
+
+            <!-- Quick Controls -->
+            <div class="flex items-center space-x-2">
+                <button id="btn-today" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-200 border border-slate-700 transition flex items-center space-x-1">
+                    <i data-lucide="crosshair" class="w-3.5 h-3.5 text-amber-400"></i>
+                    <span>Today</span>
+                </button>
+                <button id="btn-journal" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-200 border border-slate-700 transition flex items-center space-x-1">
+                    <i data-lucide="book-open" class="w-3.5 h-3.5 text-emerald-400"></i>
+                    <span class="hidden sm:inline">Journal</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Strategy Pill Banner -->
+    <div class="bg-[#10172a] border-b border-[#232f48] px-4 py-2.5">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div class="flex items-center space-x-2.5">
+                <span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-purple-900/40 text-purple-300 border border-purple-700/50 flex items-center gap-1">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Ep-3 Strategy
+                </span>
+                <span class="text-xs font-semibold text-slate-200">
+                    Trayodashi (Tithi 13) | 4 Days/Month
+                </span>
+            </div>
+            <div class="flex items-center space-x-2 text-[11px] text-slate-300 overflow-x-auto pb-1 sm:pb-0">
+                <span class="bg-slate-800/80 px-2 py-0.5 rounded border border-slate-700/60 whitespace-nowrap">Nifty: ±10 Buffer</span>
+                <span class="bg-slate-800/80 px-2 py-0.5 rounded border border-slate-700/60 whitespace-nowrap">Bank Nifty: ±50 Buffer</span>
+                <span class="bg-slate-800/80 px-2 py-0.5 rounded border border-slate-700/60 text-amber-300 whitespace-nowrap">Exit: 15:00 Sharp</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-5 grid grid-cols-1 lg:grid-cols-12 gap-5">
+
+        <!-- Left: Upcoming Radar & Quick Guide (4 Cols) -->
+        <div class="lg:col-span-4 space-y-4">
+
+            <!-- Today's Status Card -->
+            <div class="bg-[#131b2e] border border-[#232f48] rounded-xl p-4 shadow-sm">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                        <i data-lucide="zap" class="w-4 h-4 text-amber-400"></i> Signal Radar
+                    </span>
+                    <span id="today-date-badge" class="text-xs font-mono bg-slate-800 px-2 py-0.5 rounded text-slate-300">--</span>
+                </div>
+                <div id="today-alert-content"></div>
+            </div>
+
+            <!-- Upcoming 4-Trade List -->
+            <div class="bg-[#131b2e] border border-[#232f48] rounded-xl p-4 shadow-sm">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                        <i data-lucide="calendar-clock" class="w-4 h-4 text-purple-400"></i> Next Actionable Dates
+                    </h3>
+                    <span class="text-[11px] text-purple-400 font-medium">4 per month</span>
+                </div>
+                <div id="upcoming-list" class="space-y-2 max-h-[300px] overflow-y-auto pr-1"></div>
+            </div>
+
+            <!-- 15m Rule Card -->
+            <div class="bg-[#131b2e] border border-[#232f48] rounded-xl p-4 text-xs space-y-2.5 shadow-sm">
+                <h3 class="font-semibold text-slate-200 flex items-center gap-1.5 border-b border-[#232f48] pb-2">
+                    <i data-lucide="sliders" class="w-4 h-4 text-emerald-400"></i> 15m Setup Rules & Buffers
+                </h3>
+                <div class="space-y-2 text-slate-300">
+                    <div class="p-2 rounded bg-emerald-950/20 border border-emerald-900/40">
+                        <span class="font-semibold text-emerald-400">🟢 Buy Setup:</span>
+                        <p class="mt-0.5 text-slate-300">Two 15m green candles making Higher Highs. Buy above Candle 2 High + 10 pts. SL = Candle 2 Low - 10 pts.</p>
+                    </div>
+                    <div class="p-2 rounded bg-rose-950/20 border border-rose-900/40">
+                        <span class="font-semibold text-rose-400">🔴 Sell Setup:</span>
+                        <p class="mt-0.5 text-slate-300">Two 15m red candles making Lower Lows. Sell below Candle 2 Low - 10 pts. SL = Candle 2 High + 10 pts.</p>
+                    </div>
+                    <div class="p-2 rounded bg-amber-950/20 border border-amber-900/40">
+                        <span class="font-semibold text-amber-400">⚡ Reversal Setup:</span>
+                        <p class="mt-0.5 text-slate-300">If Trade 1 SL is hit (-80 pts), reverse into opposite 2-candle confirmation (ride to +180 pts target as per chart).</p>
+                    </div>
+                    <div class="p-2 rounded bg-slate-800/40 border border-slate-700/50">
+                        <span class="font-semibold text-purple-400">📅 Holiday Shifts:</span>
+                        <p class="mt-0.5 text-slate-400">Sat-Sun $\rightarrow$ Friday & Monday. Sun-Mon $\rightarrow$ Friday & Monday. Midweek Holiday $\rightarrow$ Single day trade.</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Right: Interactive Trading Calendar (8 Cols) -->
+        <div class="lg:col-span-8 space-y-4">
+
+            <!-- Month/Year Navigation -->
+            <div class="bg-[#131b2e] border border-[#232f48] rounded-xl p-3 sm:p-4 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-sm">
+                <div class="flex items-center space-x-2">
+                    <button id="btn-prev-month" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">
+                        <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                    </button>
+                    <div class="flex items-center space-x-2">
+                        <select id="select-month" class="bg-slate-800 text-slate-100 text-sm font-semibold rounded-lg px-2.5 py-1.5 border border-slate-700 focus:outline-none">
+                            <option value="1">January</option>
+                            <option value="2">February</option>
+                            <option value="3">March</option>
+                            <option value="4">April</option>
+                            <option value="5">May</option>
+                            <option value="6">June</option>
+                            <option value="7">July</option>
+                            <option value="8">August</option>
+                            <option value="9">September</option>
+                            <option value="10">October</option>
+                            <option value="11">November</option>
+                            <option value="12">December</option>
+                        </select>
+                        <select id="select-year" class="bg-slate-800 text-slate-100 text-sm font-semibold rounded-lg px-2.5 py-1.5 border border-slate-700 focus:outline-none">
+                            <option value="2025" selected>2025</option>
+                            <option value="2026">2026</option>
+                        </select>
+                    </div>
+                    <button id="btn-next-month" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">
+                        <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                    </button>
+                </div>
+
+                <div class="flex items-center space-x-3 text-xs">
+                    <span class="flex items-center gap-1.5">
+                        <span class="w-2.5 h-2.5 rounded bg-emerald-500 inline-block"></span>
+                        <span class="text-slate-300">Trade Day</span>
+                    </span>
+                    <span class="flex items-center gap-1.5">
+                        <span class="w-2.5 h-2.5 rounded bg-amber-500 inline-block"></span>
+                        <span class="text-slate-300">Shifted Day</span>
+                    </span>
+                    <span class="flex items-center gap-1.5">
+                        <span class="w-2.5 h-2.5 rounded bg-rose-500 inline-block"></span>
+                        <span class="text-slate-300">NSE Holiday</span>
+                    </span>
+                </div>
+            </div>
+
+            <!-- Calendar Grid -->
+            <div class="bg-[#131b2e] border border-[#232f48] rounded-xl p-2.5 sm:p-3 shadow-sm">
+                <div class="grid grid-cols-7 gap-1 text-center font-semibold text-xs text-slate-400 mb-2 py-1 border-b border-[#232f48]">
+                    <div class="text-slate-400">Sun</div>
+                    <div>Mon</div>
+                    <div>Tue</div>
+                    <div>Wed</div>
+                    <div>Thu</div>
+                    <div>Fri</div>
+                    <div class="text-slate-400">Sat</div>
+                </div>
+                <div id="calendar-cells" class="calendar-grid"></div>
+            </div>
+
+            <!-- Month Summary Bar -->
+            <div id="month-summary-bar" class="bg-[#131b2e] border border-[#232f48] rounded-xl px-4 py-2.5 flex items-center justify-between text-xs text-slate-400">
+                <span id="month-trade-count">Loading month...</span>
+                <span class="text-purple-400 hidden sm:flex items-center gap-1">
+                    <i data-lucide="info" class="w-3.5 h-3.5"></i> Tap highlighted date to open Trade Checklist & Calculator
+                </span>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Modal: Date Trade Plan & 15m Calculator -->
+    <div id="modal-trade-plan" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3 sm:p-4">
+        <div class="bg-[#131b2e] border border-[#232f48] rounded-2xl max-w-2xl w-full p-4 sm:p-6 space-y-4 modal-fade-in max-h-[92vh] overflow-y-auto">
+            
+            <div class="flex items-start justify-between border-b border-[#232f48] pb-3">
+                <div>
+                    <div class="flex items-center space-x-2">
+                        <span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-900/50 text-emerald-300 border border-emerald-700/60">
+                            Actionable Trading Day
+                        </span>
+                        <span id="modal-shift-tag" class="hidden px-2 py-0.5 rounded text-[11px] font-semibold bg-amber-900/50 text-amber-300 border border-amber-700/60">
+                            Weekend/Holiday Shift
+                        </span>
+                    </div>
+                    <h3 id="modal-trade-date-title" class="text-lg sm:text-xl font-bold text-white mt-1">Date</h3>
+                    <p id="modal-tithi-span" class="text-xs text-slate-400 mt-0.5"></p>
+                    <p id="modal-shift-reason" class="text-xs text-amber-400 mt-1 font-medium"></p>
+                </div>
+                <button id="modal-close-btn" class="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <!-- Live 15-Minute Calculator -->
+            <div class="bg-[#0b0f19] border border-[#232f48] rounded-xl p-3 sm:p-4 space-y-3">
+                <div class="flex items-center justify-between">
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
+                        <i data-lucide="calculator" class="w-4 h-4 text-purple-400"></i> Live 15m Calculator
+                    </h4>
+                    <select id="calc-symbol" class="bg-slate-800 text-xs text-slate-200 rounded px-2 py-1 border border-slate-700">
+                        <option value="NIFTY" selected>NIFTY 50 (Buffer: 10 pts)</option>
+                        <option value="BANKNIFTY">BANK NIFTY (Buffer: 50 pts)</option>
+                    </select>
+                </div>
+
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                    <div>
+                        <label class="block text-[11px] text-slate-400 mb-1">Candle 1 High</label>
+                        <input type="number" id="c1-high" placeholder="23350" class="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-slate-100 text-xs focus:outline-none focus:border-purple-500">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] text-slate-400 mb-1">Candle 1 Low</label>
+                        <input type="number" id="c1-low" placeholder="23270" class="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-slate-100 text-xs focus:outline-none focus:border-purple-500">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] text-slate-400 mb-1">Candle 2 High</label>
+                        <input type="number" id="c2-high" placeholder="23370" class="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-slate-100 text-xs focus:outline-none focus:border-purple-500">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] text-slate-400 mb-1">Candle 2 Low</label>
+                        <input type="number" id="c2-low" placeholder="23290" class="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-slate-100 text-xs focus:outline-none focus:border-purple-500">
+                    </div>
+                </div>
+
+                <!-- Calculator Output Cards -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+                    <div class="bg-emerald-950/30 border border-emerald-800/40 rounded-lg p-2.5 space-y-1">
+                        <div class="text-[11px] font-semibold text-emerald-400 uppercase tracking-wide">Buy Order (Higher High)</div>
+                        <div class="text-xs text-slate-300 flex justify-between">
+                            <span>Buy Entry:</span>
+                            <span id="res-buy-entry" class="font-bold text-white font-mono">--</span>
+                        </div>
+                        <div class="text-xs text-slate-300 flex justify-between">
+                            <span>1st Stop Loss:</span>
+                            <span id="res-buy-sl" class="font-semibold text-rose-400 font-mono">--</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-rose-950/30 border border-rose-800/40 rounded-lg p-2.5 space-y-1">
+                        <div class="text-[11px] font-semibold text-rose-400 uppercase tracking-wide">Sell Order (Lower Low)</div>
+                        <div class="text-xs text-slate-300 flex justify-between">
+                            <span>Sell Entry:</span>
+                            <span id="res-sell-entry" class="font-bold text-white font-mono">--</span>
+                        </div>
+                        <div class="text-xs text-slate-300 flex justify-between">
+                            <span>1st Stop Loss:</span>
+                            <span id="res-sell-sl" class="font-semibold text-rose-400 font-mono">--</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-2 rounded bg-purple-950/20 border border-purple-800/40 text-xs text-purple-200 flex items-center justify-between">
+                    <span>⚡ <strong>Reversal Rule:</strong> If Trade 1 SL hit, enter reverse on 2 opposite candles.</span>
+                    <span class="font-mono text-amber-300 font-semibold">Exit: 15:00 Sharp</span>
+                </div>
+            </div>
+
+            <!-- Execution Checklist -->
+            <div class="space-y-1.5 text-xs">
+                <h4 class="font-semibold text-slate-300 uppercase tracking-wider text-[11px]">Trade Execution Checklist</h4>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-slate-300">
+                    <label class="flex items-center space-x-2 bg-slate-800/40 p-2 rounded border border-slate-700/50 cursor-pointer">
+                        <input type="checkbox" class="rounded text-purple-600 focus:ring-0">
+                        <span>Check 1st & 2nd 15m candle close (9:45 AM)</span>
+                    </label>
+                    <label class="flex items-center space-x-2 bg-slate-800/40 p-2 rounded border border-slate-700/50 cursor-pointer">
+                        <input type="checkbox" class="rounded text-purple-600 focus:ring-0">
+                        <span>Place Buffer Entry (10 pts Nifty)</span>
+                    </label>
+                    <label class="flex items-center space-x-2 bg-slate-800/40 p-2 rounded border border-slate-700/50 cursor-pointer">
+                        <input type="checkbox" class="rounded text-purple-600 focus:ring-0">
+                        <span>Set SL at Candle 2 Low/High</span>
+                    </label>
+                    <label class="flex items-center space-x-2 bg-slate-800/40 p-2 rounded border border-slate-700/50 cursor-pointer">
+                        <input type="checkbox" class="rounded text-purple-600 focus:ring-0">
+                        <span>If 1st SL hit, watch 2-candle reversal</span>
+                    </label>
+                    <label class="flex items-center space-x-2 bg-slate-800/40 p-2 rounded border border-slate-700/50 cursor-pointer col-span-1 sm:col-span-2">
+                        <input type="checkbox" class="rounded text-purple-600 focus:ring-0">
+                        <span>Strict Square-off at 3:00 PM (15:00 IST)</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Date Trade Journal / Notes Section -->
+            <div class="border-t border-[#232f48] pt-3 space-y-2.5">
+                <div class="flex items-center justify-between">
+                    <h4 class="text-xs font-semibold uppercase tracking-wider text-slate-300">Date Trade Journal</h4>
+                    <span class="text-[11px] text-slate-400">Saved in your browser</span>
+                </div>
+
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                    <div>
+                        <label class="block text-[11px] text-slate-400 mb-1">Trade Executed</label>
+                        <select id="journal-type" class="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-slate-200">
+                            <option value="BUY">BUY</option>
+                            <option value="SELL">SELL</option>
+                            <option value="BUY -> REVERSAL SELL">BUY &rarr; REVERSAL SELL</option>
+                            <option value="SELL -> REVERSAL BUY">SELL &rarr; REVERSAL BUY</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] text-slate-400 mb-1">Entry Price</label>
+                        <input type="number" id="journal-entry" placeholder="23380" class="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-slate-200">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] text-slate-400 mb-1">Exit Price</label>
+                        <input type="number" id="journal-exit" placeholder="23100" class="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-slate-200">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] text-slate-400 mb-1">Points P&L</label>
+                        <input type="number" id="journal-pl" placeholder="+100" class="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-slate-200">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                    <div>
+                        <label class="block text-[11px] text-slate-400 mb-1">Outcome</label>
+                        <select id="journal-outcome" class="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-slate-200">
+                            <option value="Target Hit">Target Hit</option>
+                            <option value="Reversal Target Hit">Reversal Target Hit</option>
+                            <option value="SL Hit">SL Hit</option>
+                            <option value="3 PM Exit">3 PM Exit</option>
+                            <option value="No Trade">No Trade</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] text-slate-400 mb-1">Notes</label>
+                        <input type="text" id="journal-notes" placeholder="Notes on market reaction..." class="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-slate-200">
+                    </div>
+                </div>
+
+                <div class="flex justify-end pt-1">
+                    <button id="btn-save-journal" class="px-4 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-xs font-semibold text-white transition flex items-center gap-1.5">
+                        <i data-lucide="check" class="w-3.5 h-3.5"></i> Save Entry
+                    </button>
+                </div>
+
+                <div id="journal-logs-container" class="space-y-1.5 pt-1"></div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Modal: Performance Trade Journal History -->
+    <div id="modal-all-journal" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3 sm:p-4">
+        <div class="bg-[#131b2e] border border-[#232f48] rounded-2xl max-w-2xl w-full p-5 space-y-4 modal-fade-in max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between border-b border-[#232f48] pb-3">
+                <h3 class="text-base font-bold text-white flex items-center gap-2">
+                    <i data-lucide="book-open" class="w-5 h-5 text-emerald-400"></i> Trade Performance Journal
+                </h3>
+                <button id="close-journal-modal" class="p-1 rounded text-slate-400 hover:text-white transition">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <div id="all-journal-list" class="space-y-2 text-xs"></div>
+        </div>
+    </div>
+
+    <!-- Core Embedded JavaScript & 2025-2026 Dataset -->
+    <script>
+        // Official NSE Holidays for 2025 and 2026
+        const NSE_HOLIDAYS = {
+            "2025-01-26": "Republic Day",
+            "2025-02-26": "Maha Shivratri",
+            "2025-03-14": "Holi",
+            "2025-03-31": "Id-Ul-Fitr",
+            "2025-04-10": "Mahavir Jayanti",
+            "2025-04-14": "Dr. Ambedkar Jayanti",
+            "2025-04-18": "Good Friday",
+            "2025-05-01": "Maharashtra Day",
+            "2025-08-15": "Independence Day",
+            "2025-08-27": "Ganesh Chaturthi",
+            "2025-10-02": "Mahatma Gandhi Jayanti",
+            "2025-10-21": "Diwali Laxmi Pujan (Muhurat Session)",
+            "2025-10-22": "Diwali Balipratipada",
+            "2025-11-05": "Guru Nanak Jayanti",
+            "2025-12-25": "Christmas",
+            "2026-01-26": "Republic Day",
+            "2026-02-16": "Maha Shivratri",
+            "2026-03-03": "Holi",
+            "2026-03-20": "Eid-ul-Fitr",
+            "2026-04-03": "Good Friday",
+            "2026-04-14": "Dr Ambedkar Jayanti",
+            "2026-05-01": "Maharashtra Day",
+            "2026-05-27": "Bakrid / Eid al-Adha",
+            "2026-06-26": "Muharram",
+            "2026-08-15": "Independence Day",
+            "2026-10-02": "Mahatma Gandhi Jayanti",
+            "2026-10-20": "Dussehra",
+            "2026-11-09": "Diwali Balipratipada",
+            "2026-11-24": "Guru Nanak Jayanti",
+            "2026-12-25": "Christmas"
+        };
+
+        // All 49 Trayodashi Tithis for 2025 and 2026 from Prokerala Panchang
+        const TITHI_DATA = [
+            // 2025
+            { year: 2025, paksha: 'Shukla Paksha Trayodashi', timing: 'Jan 11, 8:22 am - Jan 12, 6:34 am' },
+            { year: 2025, paksha: 'Krishna Paksha Trayodashi', timing: 'Jan 26, 8:55 pm - Jan 27, 8:35 pm' },
+            { year: 2025, paksha: 'Shukla Paksha Trayodashi', timing: 'Feb 09, 7:25 pm - Feb 10, 6:57 pm' },
+            { year: 2025, paksha: 'Krishna Paksha Trayodashi', timing: 'Feb 25, 12:47 pm - Feb 26, 11:08 am' },
+            { year: 2025, paksha: 'Shukla Paksha Trayodashi', timing: 'Mar 11, 8:14 am - Mar 12, 9:12 am' },
+            { year: 2025, paksha: 'Krishna Paksha Trayodashi', timing: 'Mar 27, 1:43 am - Mar 27, 11:03 pm' },
+            { year: 2025, paksha: 'Shukla Paksha Trayodashi', timing: 'Apr 09, 10:55 pm - Apr 11, 1:00 am' },
+            { year: 2025, paksha: 'Krishna Paksha Trayodashi', timing: 'Apr 25, 11:44 am - Apr 26, 8:28 am' },
+            { year: 2025, paksha: 'Shukla Paksha Trayodashi', timing: 'May 09, 3:06 pm - May 10, 5:29 pm' },
+            { year: 2025, paksha: 'Krishna Paksha Trayodashi', timing: 'May 24, 7:37 pm - May 25, 4:14 pm' },
+            { year: 2025, paksha: 'Shukla Paksha Trayodashi', timing: 'Jun 08, 7:15 am - Jun 09, 9:36 am' },
+            { year: 2025, paksha: 'Krishna Paksha Trayodashi', timing: 'Jun 23, 1:22 am - Jun 23, 10:10 pm' },
+            { year: 2025, paksha: 'Shukla Paksha Trayodashi', timing: 'Jul 07, 11:10 pm - Jul 09, 12:38 am' },
+            { year: 2025, paksha: 'Krishna Paksha Trayodashi', timing: 'Jul 22, 7:06 am - Jul 23, 4:40 am' },
+            { year: 2025, paksha: 'Shukla Paksha Trayodashi', timing: 'Aug 06, 2:08 pm - Aug 07, 2:28 pm' },
+            { year: 2025, paksha: 'Krishna Paksha Trayodashi', timing: 'Aug 20, 1:59 pm - Aug 21, 12:45 pm' },
+            { year: 2025, paksha: 'Shukla Paksha Trayodashi', timing: 'Sep 05, 4:08 am - Sep 06, 3:13 am' },
+            { year: 2025, paksha: 'Krishna Paksha Trayodashi', timing: 'Sep 18, 11:25 pm - Sep 19, 11:37 pm' },
+            { year: 2025, paksha: 'Shukla Paksha Trayodashi', timing: 'Oct 04, 5:09 pm - Oct 05, 3:04 pm' },
+            { year: 2025, paksha: 'Krishna Paksha Trayodashi', timing: 'Oct 18, 12:19 pm - Oct 19, 1:52 pm' },
+            { year: 2025, paksha: 'Shukla Paksha Trayodashi', timing: 'Nov 03, 5:07 am - Nov 04, 2:06 am' },
+            { year: 2025, paksha: 'Krishna Paksha Trayodashi', timing: 'Nov 17, 4:48 am - Nov 18, 7:12 am' },
+            { year: 2025, paksha: 'Shukla Paksha Trayodashi', timing: 'Dec 02, 3:57 pm - Dec 03, 12:26 pm' },
+            { year: 2025, paksha: 'Krishna Paksha Trayodashi', timing: 'Dec 16, 11:57 pm - Dec 18, 2:33 am' },
+            // 2026
+            { year: 2026, paksha: 'Shukla Paksha Trayodashi', timing: 'Jan 01, 1:48 am - Jan 01, 10:22 pm' },
+            { year: 2026, paksha: 'Krishna Paksha Trayodashi', timing: 'Jan 15, 8:17 pm - Jan 16, 10:22 pm' },
+            { year: 2026, paksha: 'Shukla Paksha Trayodashi', timing: 'Jan 30, 11:09 am - Jan 31, 8:26 am' },
+            { year: 2026, paksha: 'Krishna Paksha Trayodashi', timing: 'Feb 14, 4:02 pm - Feb 15, 5:05 pm' },
+            { year: 2026, paksha: 'Shukla Paksha Trayodashi', timing: 'Feb 28, 9:20 pm - Mar 01, 7:07 pm' },
+            { year: 2026, paksha: 'Krishna Paksha Trayodashi', timing: 'Mar 16, 10:24 am - Mar 17, 10:18 am' },
+            { year: 2026, paksha: 'Shukla Paksha Trayodashi', timing: 'Mar 30, 8:51 am - Mar 31, 7:25 am' },
+            { year: 2026, paksha: 'Krishna Paksha Trayodashi', timing: 'Apr 15, 2:13 am - Apr 16, 1:04 am' },
+            { year: 2026, paksha: 'Shukla Paksha Trayodashi', timing: 'Apr 28, 9:56 pm - Apr 29, 9:23 pm' },
+            { year: 2026, paksha: 'Krishna Paksha Trayodashi', timing: 'May 14, 3:16 pm - May 15, 1:11 pm' },
+            { year: 2026, paksha: 'Shukla Paksha Trayodashi', timing: 'May 28, 12:44 pm - May 29, 1:07 pm' },
+            { year: 2026, paksha: 'Krishna Paksha Trayodashi', timing: 'Jun 13, 1:46 am - Jun 13, 11:08 pm' },
+            { year: 2026, paksha: 'Shukla Paksha Trayodashi', timing: 'Jun 27, 4:46 am - Jun 28, 5:48 am' },
+            { year: 2026, paksha: 'Krishna Paksha Trayodashi', timing: 'Jul 12, 10:39 am - Jul 12, 7:45 pm' },
+            { year: 2026, paksha: 'Shukla Paksha Trayodashi', timing: 'Jul 26, 9:22 pm - Jul 27, 10:48 pm' },
+            { year: 2026, paksha: 'Krishna Paksha Trayodashi', timing: 'Aug 10, 6:49 pm - Aug 11, 4:04 pm' },
+            { year: 2026, paksha: 'Shukla Paksha Trayodashi', timing: 'Aug 25, 1:36 pm - Aug 26, 3:00 pm' },
+            { year: 2026, paksha: 'Krishna Paksha Trayodashi', timing: 'Sep 09, 2:50 am - Sep 10, 12:44 am' },
+            { year: 2026, paksha: 'Shukla Paksha Trayodashi', timing: 'Sep 24, 4:18 am - Sep 25, 5:08 am' },
+            { year: 2026, paksha: 'Krishna Paksha Trayodashi', timing: 'Oct 08, 11:42 am - Oct 09, 10:41 am' },
+            { year: 2026, paksha: 'Shukla Paksha Trayodashi', timing: 'Oct 23, 5:12 pm - Oct 24, 5:08 pm' },
+            { year: 2026, paksha: 'Krishna Paksha Trayodashi', timing: 'Nov 06, 10:24 pm - Nov 07, 10:43 pm' },
+            { year: 2026, paksha: 'Shukla Paksha Trayodashi', timing: 'Nov 22, 4:26 am - Nov 23, 3:28 am' },
+            { year: 2026, paksha: 'Krishna Paksha Trayodashi', timing: 'Dec 06, 11:15 am - Dec 07, 1:08 pm' },
+            { year: 2026, paksha: 'Shukla Paksha Trayodashi', timing: 'Dec 21, 2:48 pm - Dec 22, 12:46 pm' }
+        ];
+
+        const MONTH_MAP = {
+            'Jan': 0, 'Feb': 1, 'Mar': 2, 'Apr': 3, 'May': 4, 'Jun': 5,
+            'Jul': 6, 'Aug': 7, 'Sep': 8, 'Oct': 9, 'Nov': 10, 'Dec': 11
+        };
+
+        function isWeekend(d) {
+            const day = d.getDay();
+            return (day === 0 || day === 6);
+        }
+
+        function formatDateStr(d) {
+            const y = d.getFullYear();
+            const m = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${y}-${m}-${day}`;
+        }
+
+        function isNSEHoliday(d) {
+            return !!NSE_HOLIDAYS[formatDateStr(d)];
+        }
+
+        function isTradingDay(d) {
+            return !isWeekend(d) && !isNSEHoliday(d);
+        }
+
+        function getPrevTradingDay(d) {
+            let cur = new Date(d);
+            cur.setDate(cur.getDate() - 1);
+            while (!isTradingDay(cur)) {
+                cur.setDate(cur.getDate() - 1);
+            }
+            return cur;
+        }
+
+        function getNextTradingDay(d) {
+            let cur = new Date(d);
+            cur.setDate(cur.getDate() + 1);
+            while (!isTradingDay(cur)) {
+                cur.setDate(cur.getDate() + 1);
+            }
+            return cur;
+        }
+
+        // Shift engine implementing exact user rules
+        function resolveTradingDates(item) {
+            const pattern = /([A-Za-z]{3})\s+(\d{1,2})/g;
+            let match;
+            const dates = [];
+            while ((match = pattern.exec(item.timing)) !== null) {
+                const mName = match[1];
+                const dayNum = parseInt(match[2]);
+                if (MONTH_MAP[mName] !== undefined) {
+                    dates.push(new Date(item.year, MONTH_MAP[mName], dayNum));
+                }
+            }
+            if (dates.length === 0) return [];
+
+            const d1 = dates[0];
+            const d2 = dates.length > 1 ? dates[1] : d1;
+            const w1 = d1.getDay();
+            const w2 = d2.getDay();
+            const t1 = isTradingDay(d1);
+            const t2 = isTradingDay(d2);
+
+            const results = [];
+
+            // Case: Sat - Sun
+            if ((w1 === 6 && w2 === 0) || (w1 === 0 && w2 === 6)) {
+                const prevFri = getPrevTradingDay(d1);
+                const nextMon = getNextTradingDay(d2);
+                results.push({ date: prevFri, dateStr: formatDateStr(prevFri), isShifted: true, reason: 'Weekend Shift (Sat-Sun): Traded on Friday before' });
+                results.push({ date: nextMon, dateStr: formatDateStr(nextMon), isShifted: true, reason: 'Weekend Shift (Sat-Sun): Traded on Monday after' });
+            }
+            // Case: Sun - Mon
+            else if (w1 === 0 && w2 === 1) {
+                const prevFri = getPrevTradingDay(d1);
+                results.push({ date: prevFri, dateStr: formatDateStr(prevFri), isShifted: true, reason: 'Weekend Shift (Sunday): Traded on Friday before' });
+                if (t2) {
+                    results.push({ date: d2, dateStr: formatDateStr(d2), isShifted: false, reason: 'Regular Monday Trading Day' });
+                } else {
+                    const nxt = getNextTradingDay(d2);
+                    results.push({ date: nxt, dateStr: formatDateStr(nxt), isShifted: true, reason: `Monday Holiday (${NSE_HOLIDAYS[formatDateStr(d2)]}): Shifted to next trading day` });
+                }
+            }
+            // Case: Fri - Sat
+            else if (w1 === 5 && w2 === 6) {
+                if (t1) {
+                    results.push({ date: d1, dateStr: formatDateStr(d1), isShifted: false, reason: 'Regular Friday Trading Day' });
+                } else {
+                    const prev = getPrevTradingDay(d1);
+                    results.push({ date: prev, dateStr: formatDateStr(prev), isShifted: true, reason: `Friday Holiday (${NSE_HOLIDAYS[formatDateStr(d1)]}): Traded day before` });
+                }
+                const nextMon = getNextTradingDay(d2);
+                results.push({ date: nextMon, dateStr: formatDateStr(nextMon), isShifted: true, reason: 'Weekend Shift (Saturday): Traded on Monday after' });
+            }
+            // Case: Both non-trading days
+            else if (!t1 && !t2) {
+                const p = getPrevTradingDay(d1);
+                const n = getNextTradingDay(d2);
+                results.push({ date: p, dateStr: formatDateStr(p), isShifted: true, reason: 'Double Holiday Shift: Traded one day before' });
+                results.push({ date: n, dateStr: formatDateStr(n), isShifted: true, reason: 'Double Holiday Shift: Traded one day after' });
+            }
+            // Case: One day is holiday (e.g. Wed-Thu where Wed is holiday)
+            else if (!t1 && t2) {
+                results.push({ date: d2, dateStr: formatDateStr(d2), isShifted: false, reason: `Traded on ${getDayName(d2.getDay())} only (${formatDateFriendly(formatDateStr(d1))} was holiday)` });
+            }
+            else if (t1 && !t2) {
+                results.push({ date: d1, dateStr: formatDateStr(d1), isShifted: false, reason: `Traded on ${getDayName(d1.getDay())} only (${formatDateFriendly(formatDateStr(d2))} is holiday)` });
+            }
+            // Both regular trading days
+            else {
+                results.push({ date: d1, dateStr: formatDateStr(d1), isShifted: false, reason: 'Regular Trading Day (Day 1)' });
+                if (formatDateStr(d1) !== formatDateStr(d2)) {
+                    results.push({ date: d2, dateStr: formatDateStr(d2), isShifted: false, reason: 'Regular Trading Day (Day 2)' });
+                }
+            }
+
+            return results.map(r => ({
+                ...r,
+                paksha: item.paksha,
+                timing: item.timing
+            }));
+        }
+
+        // Build Master Actionable Trading Dates Lookup
+        const ALL_ACTIONABLE_TRADES = [];
+        const DATE_MAP = {};
+
+        TITHI_DATA.forEach(item => {
+            const resolved = resolveTradingDates(item);
+            resolved.forEach(r => {
+                ALL_ACTIONABLE_TRADES.push(r);
+                if (!DATE_MAP[r.dateStr]) DATE_MAP[r.dateStr] = [];
+                DATE_MAP[r.dateStr].push(r);
+            });
+        });
+
+        // App State
+        let currentYear = 2025;
+        let currentMonth = 1;
+        let selectedDateStr = null;
+
+        // LocalStorage Trade Journal Helper
+        function getJournal(dateStr) {
+            const raw = localStorage.getItem("astro_journal_" + dateStr);
+            return raw ? JSON.parse(raw) : [];
+        }
+        function saveJournal(dateStr, entry) {
+            const current = getJournal(dateStr);
+            current.unshift(entry);
+            localStorage.setItem("astro_journal_" + dateStr, JSON.stringify(current));
+        }
+        function getAllJournals() {
+            const all = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const k = localStorage.key(i);
+                if (k.startsWith("astro_journal_")) {
+                    const entries = JSON.parse(localStorage.getItem(k));
+                    entries.forEach(e => all.push(e));
+                }
+            }
+            // Add default initial sample trade if empty
+            if (all.length === 0) {
+                all.push({
+                    date: "2025-01-13",
+                    symbol: "NIFTY",
+                    trade_type: "BUY -> REVERSAL SELL",
+                    entry_price: 23380,
+                    exit_price: 23100,
+                    points_pl: 100,
+                    outcome: "Reversal Target Hit (+180 pts after -80 pts SL)",
+                    notes: "First trade stopped out (-80 pts). Reverse trade triggered on 2 red candles, hit target (+180 pts). Net: +100 pts."
+                });
+            }
+            return all.sort((a, b) => b.date.localeCompare(a.date));
+        }
+
+        // UI Initialization
+        document.addEventListener("DOMContentLoaded", () => {
+            document.getElementById("select-year").value = "2025";
+            document.getElementById("select-month").value = "1";
+
+            document.getElementById("select-year").addEventListener("change", (e) => {
+                currentYear = parseInt(e.target.value);
+                renderCalendar();
+            });
+            document.getElementById("select-month").addEventListener("change", (e) => {
+                currentMonth = parseInt(e.target.value);
+                renderCalendar();
+            });
+            document.getElementById("btn-prev-month").addEventListener("click", () => {
+                currentMonth--;
+                if (currentMonth < 1) { currentMonth = 12; currentYear--; if (currentYear < 2025) currentYear = 2025; }
+                updateNav();
+                renderCalendar();
+            });
+            document.getElementById("btn-next-month").addEventListener("click", () => {
+                currentMonth++;
+                if (currentMonth > 12) { currentMonth = 1; currentYear++; if (currentYear > 2026) currentYear = 2026; }
+                updateNav();
+                renderCalendar();
+            });
+            document.getElementById("btn-today").addEventListener("click", () => {
+                const now = new Date();
+                currentYear = (now.getFullYear() === 2025 || now.getFullYear() === 2026) ? now.getFullYear() : 2025;
+                currentMonth = now.getMonth() + 1;
+                updateNav();
+                renderCalendar();
+            });
+
+            document.getElementById("modal-close-btn").addEventListener("click", () => {
+                document.getElementById("modal-trade-plan").classList.add("hidden");
+            });
+            document.getElementById("btn-journal").addEventListener("click", openAllJournalsModal);
+            document.getElementById("close-journal-modal").addEventListener("click", () => {
+                document.getElementById("modal-all-journal").classList.add("hidden");
+            });
+
+            // Calculator Listeners
+            ["c1-high", "c1-low", "c2-high", "c2-low", "calc-symbol"].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.addEventListener("input", recalculateLevels);
+            });
+
+            // Save Journal Entry
+            document.getElementById("btn-save-journal").addEventListener("click", () => {
+                if (!selectedDateStr) return;
+                const entry = {
+                    date: selectedDateStr,
+                    symbol: document.getElementById("calc-symbol").value,
+                    trade_type: document.getElementById("journal-type").value,
+                    entry_price: parseFloat(document.getElementById("journal-entry").value) || null,
+                    exit_price: parseFloat(document.getElementById("journal-exit").value) || null,
+                    points_pl: parseFloat(document.getElementById("journal-pl").value) || 0,
+                    outcome: document.getElementById("journal-outcome").value,
+                    notes: document.getElementById("journal-notes").value
+                };
+                saveJournal(selectedDateStr, entry);
+                renderDateJournals(selectedDateStr);
+                document.getElementById("journal-entry").value = "";
+                document.getElementById("journal-exit").value = "";
+                document.getElementById("journal-pl").value = "";
+                document.getElementById("journal-notes").value = "";
+            });
+
+            renderUpcomingList();
+            renderCalendar();
+        });
+
+        function updateNav() {
+            document.getElementById("select-year").value = currentYear.toString();
+            document.getElementById("select-month").value = currentMonth.toString();
+        }
+
+        function renderCalendar() {
+            const container = document.getElementById("calendar-cells");
+            container.innerHTML = "";
+
+            const firstDayIndex = new Date(currentYear, currentMonth - 1, 1).getDay();
+            const daysInMonth = new Date(currentYear, currentMonth, 0).getDate();
+            const daysInPrevMonth = new Date(currentYear, currentMonth - 1, 0).getDate();
+            const todayStr = formatDateStr(new Date());
+
+            let monthTradesCount = 0;
+
+            // Prev month padding
+            for (let i = firstDayIndex - 1; i >= 0; i--) {
+                const d = daysInPrevMonth - i;
+                const cell = document.createElement("div");
+                cell.className = "calendar-day other-month p-1.5 flex flex-col justify-between";
+                cell.innerHTML = `<span class="text-xs text-slate-600 font-medium">${d}</span>`;
+                container.appendChild(cell);
+            }
+
+            // Current month days
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dateObj = new Date(currentYear, currentMonth - 1, day);
+                const dateStr = formatDateStr(dateObj);
+                const isWk = (dateObj.getDay() === 0 || dateObj.getDay() === 6);
+                const isToday = (dateStr === todayStr);
+
+                const cell = document.createElement("div");
+                cell.className = `calendar-day p-1.5 flex flex-col justify-between cursor-pointer ${isWk ? "weekend" : ""} ${isToday ? "today" : ""}`;
+
+                let header = `<div class="flex items-center justify-between">
+                    <span class="text-xs font-semibold ${isToday ? "text-amber-400 font-bold" : "text-slate-300"}">${day}</span>
+                    ${isToday ? `<span class="text-[9px] bg-amber-500/20 text-amber-300 px-1 rounded">Today</span>` : ""}
+                </div>`;
+
+                let badges = `<div class="space-y-1 mt-1">`;
+                const trades = DATE_MAP[dateStr] || [];
+                const holiday = NSE_HOLIDAYS[dateStr];
+
+                if (trades.length > 0) {
+                    monthTradesCount++;
+                    trades.forEach(t => {
+                        badges += `
+                            <div class="px-1.5 py-1 rounded text-[10px] sm:text-[11px] font-medium leading-tight ${t.isShifted ? "badge-trade-shifted" : "badge-trade"} flex flex-col shadow-sm">
+                                <div class="flex items-center justify-between">
+                                    <span class="font-bold">🎯 Ep-3 Trade</span>
+                                    ${t.isShifted ? `<span class="text-[8px] uppercase px-1 rounded bg-amber-400/20 text-amber-300">Shift</span>` : ""}
+                                </div>
+                                <span class="text-[9px] opacity-90 truncate mt-0.5">${t.isShifted ? t.reason.split(":")[0] : "Trayodashi"}</span>
+                            </div>
+                        `;
+                    });
+                }
+
+                if (holiday) {
+                    badges += `
+                        <div class="px-1.5 py-0.5 rounded text-[9px] sm:text-[10px] leading-tight badge-holiday truncate" title="${holiday}">
+                            🛑 ${holiday}
+                        </div>
+                    `;
+                }
+
+                badges += `</div>`;
+                cell.innerHTML = header + badges;
+
+                if (trades.length > 0) {
+                    cell.addEventListener("click", () => openDatePlan(dateStr));
+                }
+
+                container.appendChild(cell);
+            }
+
+            // Fill remainder
+            const total = firstDayIndex + daysInMonth;
+            const remaining = total > 35 ? 42 - total : 35 - total;
+            for (let d = 1; d <= remaining; d++) {
+                const cell = document.createElement("div");
+                cell.className = "calendar-day other-month p-1.5 flex flex-col justify-between";
+                cell.innerHTML = `<span class="text-xs text-slate-600 font-medium">${d}</span>`;
+                container.appendChild(cell);
+            }
+
+            document.getElementById("month-trade-count").innerHTML = `
+                <span class="font-semibold text-slate-200">${getMonthName(currentMonth)} ${currentYear}</span>: 
+                <span class="text-emerald-400 font-bold">${monthTradesCount} Actionable Trades</span> 
+                (2 Shukla + 2 Krishna Paksha)
+            `;
+
+            lucide.createIcons();
+        }
+
+        function renderUpcomingList() {
+            const todayStr = formatDateStr(new Date());
+            document.getElementById("today-date-badge").textContent = todayStr;
+
+            const todayTrades = DATE_MAP[todayStr] || [];
+            const alertBox = document.getElementById("today-alert-content");
+            if (todayTrades.length > 0) {
+                alertBox.innerHTML = `
+                    <div class="p-3 rounded-lg bg-emerald-950/40 border border-emerald-500/50 text-emerald-300 text-xs space-y-1">
+                        <div class="font-bold flex items-center justify-between">
+                            <span>⚡ TODAY IS AN ACTION TRADE DAY!</span>
+                            <span class="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-200 text-[10px]">Exit: 15:00</span>
+                        </div>
+                        <p class="text-[11px] text-slate-300">${todayTrades[0].paksha} - ${todayTrades[0].timing}</p>
+                        <button onclick="openDatePlan('${todayStr}')" class="mt-2 w-full py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded font-semibold text-xs transition">
+                            Open Today's Checklist & Levels
+                        </button>
+                    </div>
+                `;
+            } else {
+                alertBox.innerHTML = `
+                    <div class="p-2.5 rounded-lg bg-slate-800/40 border border-slate-700/50 text-slate-400 text-xs flex items-center gap-2">
+                        <i data-lucide="check-circle" class="w-4 h-4 text-slate-500"></i>
+                        <span>No astrology trade scheduled today. See next dates below.</span>
+                    </div>
+                `;
+            }
+
+            const upcoming = ALL_ACTIONABLE_TRADES.filter(t => t.dateStr >= todayStr).slice(0, 8);
+            const listContainer = document.getElementById("upcoming-list");
+            let html = "";
+            upcoming.forEach(t => {
+                html += `
+                    <div onclick="openDatePlan('${t.dateStr}')" class="p-2.5 rounded-lg bg-[#0f172a] hover:bg-[#1a243b] border border-[#232f48] cursor-pointer transition flex items-center justify-between group">
+                        <div class="space-y-0.5">
+                            <div class="flex items-center space-x-2">
+                                <span class="text-xs font-bold text-slate-100 group-hover:text-purple-300 transition font-mono">${t.dateStr}</span>
+                                <span class="text-[11px] text-slate-400">(${getDayName(new Date(t.dateStr).getDay())})</span>
+                                ${t.isShifted ? `<span class="px-1 py-0.2 rounded text-[9px] bg-amber-950/60 text-amber-400 border border-amber-800/50">Shifted</span>` : ""}
+                            </div>
+                            <p class="text-[10px] text-slate-400 truncate max-w-[210px]">${t.paksha} [${t.timing}]</p>
+                        </div>
+                        <span class="text-xs font-semibold ${t.isShifted ? 'text-amber-400' : 'text-emerald-400'} flex items-center gap-1">
+                            <i data-lucide="crosshair" class="w-3.5 h-3.5"></i> Action
+                        </span>
+                    </div>
+                `;
+            });
+            listContainer.innerHTML = html;
+        }
+
+        function openDatePlan(dateStr) {
+            selectedDateStr = dateStr;
+            const trades = DATE_MAP[dateStr] || [];
+            const d = new Date(dateStr);
+
+            document.getElementById("modal-trade-date-title").textContent = `${getDayName(d.getDay())}, ${formatDateFriendly(dateStr)}`;
+            
+            if (trades.length > 0) {
+                const tr = trades[0];
+                document.getElementById("modal-tithi-span").textContent = `Astrological Span: ${tr.paksha} [${tr.timing}]`;
+                const shiftTag = document.getElementById("modal-shift-tag");
+                const shiftReason = document.getElementById("modal-shift-reason");
+                if (tr.isShifted) {
+                    shiftTag.classList.remove("hidden");
+                    shiftReason.textContent = `⚡ ${tr.reason}`;
+                } else {
+                    shiftTag.classList.add("hidden");
+                    shiftReason.textContent = "Regular Trading Day on Tithi";
+                }
+            }
+
+            renderDateJournals(dateStr);
+            recalculateLevels();
+            document.getElementById("modal-trade-plan").classList.remove("hidden");
+            lucide.createIcons();
+        }
+
+        function recalculateLevels() {
+            const sym = document.getElementById("calc-symbol").value;
+            const buffer = sym === "NIFTY" ? 10.0 : 50.0;
+            const c1H = parseFloat(document.getElementById("c1-high").value);
+            const c1L = parseFloat(document.getElementById("c1-low").value);
+            const c2H = parseFloat(document.getElementById("c2-high").value);
+            const c2L = parseFloat(document.getElementById("c2-low").value);
+
+            const bEntry = document.getElementById("res-buy-entry");
+            const bSl = document.getElementById("res-buy-sl");
+            const sEntry = document.getElementById("res-sell-entry");
+            const sSl = document.getElementById("res-sell-sl");
+
+            if (!isNaN(c2H) && !isNaN(c2L)) {
+                bEntry.textContent = `${(c2H + buffer).toFixed(1)} (+${buffer} pts)`;
+                bSl.textContent = `${(c2L - buffer).toFixed(1)} (-${buffer} pts)`;
+                sEntry.textContent = `${(c2L - buffer).toFixed(1)} (-${buffer} pts)`;
+                sSl.textContent = `${(c2H + buffer).toFixed(1)} (+${buffer} pts)`;
+            } else {
+                bEntry.textContent = `-- (+${buffer} pts)`;
+                bSl.textContent = `-- (-${buffer} pts)`;
+                sEntry.textContent = `-- (-${buffer} pts)`;
+                sSl.textContent = `-- (+${buffer} pts)`;
+            }
+        }
+
+        function renderDateJournals(dateStr) {
+            const list = getJournal(dateStr);
+            const box = document.getElementById("journal-logs-container");
+            if (list.length === 0) {
+                box.innerHTML = `<div class="text-[11px] text-slate-500 italic">No trade logs saved for this date.</div>`;
+                return;
+            }
+            let html = `<div class="text-[11px] font-semibold text-slate-400 mb-1">Saved Trades for this Date:</div>`;
+            list.forEach(j => {
+                const isProfit = (j.points_pl >= 0);
+                html += `
+                    <div class="p-2.5 rounded bg-slate-800/60 border border-slate-700/60 text-xs flex items-center justify-between">
+                        <div>
+                            <div class="flex items-center space-x-2">
+                                <span class="font-bold text-white">${j.symbol}</span>
+                                <span class="px-1.5 py-0.5 rounded text-[10px] bg-slate-700 text-slate-300 font-mono">${j.trade_type}</span>
+                                <span class="text-slate-400 text-[11px]">Entry: ${j.entry_price || "--"} | Exit: ${j.exit_price || "--"}</span>
+                            </div>
+                            ${j.notes ? `<p class="text-[11px] text-slate-300 mt-0.5">${j.notes}</p>` : ""}
+                        </div>
+                        <div class="text-right">
+                            <span class="font-bold font-mono text-sm ${isProfit ? 'text-emerald-400' : 'text-rose-400'}">
+                                ${isProfit ? '+' : ''}${j.points_pl} pts
+                            </span>
+                            <div class="text-[10px] text-slate-400">${j.outcome}</div>
+                        </div>
+                    </div>
+                `;
+            });
+            box.innerHTML = html;
+        }
+
+        function openAllJournalsModal() {
+            const list = getAllJournals();
+            const box = document.getElementById("all-journal-list");
+            let total = 0;
+            let wins = 0;
+            list.forEach(e => {
+                total += (e.points_pl || 0);
+                if ((e.points_pl || 0) > 0) wins++;
+            });
+            const wr = list.length > 0 ? ((wins / list.length) * 100).toFixed(0) : 0;
+
+            let html = `
+                <div class="grid grid-cols-3 gap-3 p-3 bg-slate-800/60 rounded-xl border border-slate-700 mb-3 text-center">
+                    <div>
+                        <div class="text-[10px] text-slate-400 uppercase">Trades</div>
+                        <div class="text-base font-bold text-white">${list.length}</div>
+                    </div>
+                    <div>
+                        <div class="text-[10px] text-slate-400 uppercase">Net Points</div>
+                        <div class="text-base font-bold ${total >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${total >= 0 ? '+' : ''}${total.toFixed(1)} pts</div>
+                    </div>
+                    <div>
+                        <div class="text-[10px] text-slate-400 uppercase">Win Rate</div>
+                        <div class="text-base font-bold text-purple-400">${wr}%</div>
+                    </div>
+                </div>
+            `;
+
+            list.forEach(j => {
+                const isProfit = (j.points_pl >= 0);
+                html += `
+                    <div class="p-2.5 rounded-lg bg-slate-800/40 border border-slate-700/50 flex items-center justify-between">
+                        <div>
+                            <div class="flex items-center space-x-2">
+                                <span class="font-mono font-bold text-slate-200">${j.date}</span>
+                                <span class="text-xs font-semibold text-purple-300">${j.symbol}</span>
+                                <span class="px-1.5 py-0.5 rounded text-[10px] bg-slate-700 text-slate-300">${j.trade_type}</span>
+                            </div>
+                            <p class="text-xs text-slate-400 mt-0.5">${j.notes || "No notes"}</p>
+                        </div>
+                        <div class="text-right">
+                            <div class="font-bold font-mono text-sm ${isProfit ? 'text-emerald-400' : 'text-rose-400'}">
+                                ${isProfit ? '+' : ''}${j.points_pl} pts
+                            </div>
+                            <span class="text-[10px] text-slate-400">${j.outcome}</span>
+                        </div>
+                    </div>
+                `;
+            });
+            box.innerHTML = html;
+            document.getElementById("modal-all-journal").classList.remove("hidden");
+            lucide.createIcons();
+        }
+
+        function getMonthName(m) {
+            const arr = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            return arr[m - 1];
+        }
+
+        function getDayName(d) {
+            const arr = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+            return arr[d];
+        }
+
+        function formatDateFriendly(dateStr) {
+            if (!dateStr) return "";
+            const parts = dateStr.split("-");
+            const d = new Date(parts[0], parts[1] - 1, parts[2]);
+            return d.toLocaleDateString("en-US", { day: "numeric", month: "short", year: "numeric" });
+        }
+    </script>
+</body>
+</html>
