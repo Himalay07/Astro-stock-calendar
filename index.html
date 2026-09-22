@@ -3,7 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AstroStock - Ep-3 Trayodashi Strategy & Calendar</title>
+    <title>AstroStock Pro - Ep-3 Trayodashi Strategy Terminal</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -11,10 +15,28 @@
             darkMode: 'class',
             theme: {
                 extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        mono: ['"JetBrains Mono"', 'monospace'],
+                    },
                     colors: {
-                        darkbg: '#0b0f19',
-                        darkcard: '#131b2e',
-                        darkborder: '#232f48'
+                        space: {
+                            950: '#060913',
+                            900: '#0b101f',
+                            850: '#10172a',
+                            800: '#162038',
+                            700: '#223052',
+                        },
+                        emerald: {
+                            400: '#34d399',
+                            500: '#10b981',
+                            950: '#022c22'
+                        },
+                        amber: {
+                            400: '#fbbf24',
+                            500: '#f59e0b',
+                            950: '#451a03'
+                        }
                     }
                 }
             }
@@ -24,243 +46,354 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         body {
-            background-color: #0b0f19;
-            color: #e2e8f0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #060913;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.12) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(245, 158, 11, 0.08) 0px, transparent 50%),
+                radial-gradient(at 50% 100%, rgba(16, 185, 129, 0.07) 0px, transparent 60%);
+            background-attachment: fixed;
+            color: #f1f5f9;
+            font-family: 'Plus Jakarta Sans', sans-serif;
             -webkit-tap-highlight-color: transparent;
         }
+
+        /* Glassmorphism Cards */
+        .glass-card {
+            background: linear-gradient(135deg, rgba(16, 23, 42, 0.8) 0%, rgba(11, 16, 31, 0.9) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            backdrop-filter: blur(12px);
+        }
+
+        .glass-card-hover:hover {
+            border-color: rgba(139, 92, 246, 0.35);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4), 0 0 20px rgba(139, 92, 246, 0.1);
+        }
+
+        /* Custom Calendar Grid */
         .calendar-grid {
             display: grid;
             grid-template-columns: repeat(7, minmax(0, 1fr));
-            gap: 1px;
-            background-color: #232f48;
-            border: 1px solid #232f48;
-            border-radius: 0.75rem;
+            gap: 2px;
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 0.85rem;
             overflow: hidden;
         }
+
         .calendar-day {
-            min-height: 95px;
-            background-color: #111827;
-            transition: all 0.15s ease-in-out;
+            min-height: 105px;
+            background-color: rgba(11, 16, 31, 0.85);
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
         }
+
         @media (max-width: 640px) {
             .calendar-day {
-                min-height: 80px;
+                min-height: 85px;
                 padding: 4px !important;
             }
         }
+
         .calendar-day:hover {
-            background-color: #1f2937;
+            background-color: rgba(22, 32, 56, 0.95);
         }
+
         .calendar-day.other-month {
-            background-color: #0c1017;
+            background-color: rgba(6, 9, 19, 0.6);
             opacity: 0.35;
         }
+
         .calendar-day.today {
-            border: 1px solid #f59e0b;
-            box-shadow: inset 0 0 10px rgba(245, 158, 11, 0.2);
+            border: 1.5px solid #f59e0b;
+            box-shadow: inset 0 0 14px rgba(245, 158, 11, 0.2);
         }
+
         .calendar-day.weekend {
-            background-color: #0f1420;
+            background-color: rgba(9, 13, 26, 0.75);
         }
+
+        /* Glowing Action Badges */
         .badge-trade {
-            background: linear-gradient(135deg, rgba(16, 185, 129, 0.25), rgba(5, 150, 105, 0.35));
-            border: 1px solid rgba(16, 185, 129, 0.7);
-            color: #34d399;
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.22), rgba(5, 150, 105, 0.35));
+            border: 1px solid rgba(52, 211, 153, 0.65);
+            color: #6ee7b7;
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.15);
         }
+
+        .badge-trade:hover {
+            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
+            transform: translateY(-1px);
+        }
+
         .badge-trade-shifted {
-            background: linear-gradient(135deg, rgba(245, 158, 11, 0.25), rgba(217, 119, 6, 0.35));
-            border: 1px solid rgba(245, 158, 11, 0.7);
-            color: #fbbf24;
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.22), rgba(217, 119, 6, 0.35));
+            border: 1px solid rgba(251, 191, 36, 0.65);
+            color: #fde68a;
+            box-shadow: 0 2px 8px rgba(245, 158, 11, 0.15);
         }
+
+        .badge-trade-shifted:hover {
+            box-shadow: 0 4px 14px rgba(245, 158, 11, 0.3);
+            transform: translateY(-1px);
+        }
+
         .badge-holiday {
-            background: linear-gradient(135deg, rgba(239, 68, 68, 0.25), rgba(185, 28, 28, 0.35));
-            border: 1px solid rgba(239, 68, 68, 0.7);
-            color: #f87171;
+            background: linear-gradient(135deg, rgba(244, 63, 94, 0.2), rgba(225, 29, 72, 0.3));
+            border: 1px solid rgba(251, 113, 133, 0.55);
+            color: #fda4af;
         }
+
+        /* Animation */
         .modal-fade-in {
-            animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            animation: fadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);
         }
+
         @keyframes fadeIn {
-            from { opacity: 0; transform: scale(0.97) translateY(8px); }
+            from { opacity: 0; transform: scale(0.96) translateY(10px); }
             to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        /* Month Pills Scrollbar */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
         }
     </style>
 </head>
 <body class="min-h-screen flex flex-col antialiased selection:bg-purple-600 selection:text-white">
 
-    <!-- Top Sticky Header -->
-    <header class="border-b border-[#232f48] bg-[#0f172a]/95 backdrop-blur sticky top-0 z-40">
+    <!-- Top Glow Header -->
+    <header class="border-b border-white/[0.08] bg-space-950/80 backdrop-blur-md sticky top-0 z-40">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
             <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-purple-600 to-amber-500 flex items-center justify-center shadow-lg shadow-purple-900/30">
-                    <i data-lucide="moon-star" class="w-6 h-6 text-white"></i>
+                <div class="relative group">
+                    <div class="absolute -inset-0.5 bg-gradient-to-r from-purple-600 via-amber-500 to-emerald-400 rounded-xl blur opacity-60 group-hover:opacity-100 transition duration-300"></div>
+                    <div class="relative w-10 h-10 rounded-xl bg-space-900 border border-white/10 flex items-center justify-center">
+                        <i data-lucide="sparkles" class="w-5 h-5 text-amber-300"></i>
+                    </div>
                 </div>
                 <div>
-                    <h1 class="text-base sm:text-lg font-bold bg-gradient-to-r from-purple-400 via-amber-300 to-emerald-400 bg-clip-text text-transparent">
-                        AstroStock Calendar
-                    </h1>
-                    <p class="text-[11px] text-slate-400 hidden sm:block">Ep-3 Trayodashi Intraday Strategy</p>
+                    <div class="flex items-center gap-2">
+                        <h1 class="text-base sm:text-lg font-extrabold tracking-tight bg-gradient-to-r from-purple-300 via-amber-200 to-emerald-300 bg-clip-text text-transparent">
+                            AstroStock Pro
+                        </h1>
+                        <span class="text-[10px] uppercase font-bold tracking-widest px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-300 border border-purple-500/30">
+                            Ep-3 Trayodashi
+                        </span>
+                    </div>
+                    <p class="text-[11px] text-slate-400 hidden sm:block">Vedic Tithi 13 • 4 Monthly Days • Intraday 15m Price Action</p>
                 </div>
             </div>
 
-            <!-- Quick Controls -->
+            <!-- Controls -->
             <div class="flex items-center space-x-2">
-                <button id="btn-today" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-200 border border-slate-700 transition flex items-center space-x-1">
+                <button id="btn-today" class="px-3 py-1.5 rounded-lg bg-space-850 hover:bg-space-800 text-xs font-semibold text-slate-200 border border-white/10 transition flex items-center space-x-1.5 shadow-sm">
                     <i data-lucide="crosshair" class="w-3.5 h-3.5 text-amber-400"></i>
                     <span>Today</span>
                 </button>
-                <button id="btn-journal" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-200 border border-slate-700 transition flex items-center space-x-1">
-                    <i data-lucide="book-open" class="w-3.5 h-3.5 text-emerald-400"></i>
-                    <span class="hidden sm:inline">Journal</span>
+                <button id="btn-journal" class="px-3 py-1.5 rounded-lg bg-space-850 hover:bg-space-800 text-xs font-semibold text-slate-200 border border-white/10 transition flex items-center space-x-1.5 shadow-sm">
+                    <i data-lucide="book-marked" class="w-3.5 h-3.5 text-emerald-400"></i>
+                    <span>Journal</span>
                 </button>
             </div>
         </div>
     </header>
 
-    <!-- Strategy Pill Banner -->
-    <div class="bg-[#10172a] border-b border-[#232f48] px-4 py-2.5">
-        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-            <div class="flex items-center space-x-2.5">
-                <span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-purple-900/40 text-purple-300 border border-purple-700/50 flex items-center gap-1">
-                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Ep-3 Strategy
+    <!-- Subheader Strategy Bar -->
+    <div class="bg-space-900/60 border-b border-white/[0.06] px-4 py-2.5">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+            <div class="flex items-center space-x-2.5 text-xs text-slate-300">
+                <span class="flex items-center gap-1.5 px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 font-semibold">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    4 Trading Days / Month
                 </span>
-                <span class="text-xs font-semibold text-slate-200">
-                    Trayodashi (Tithi 13) | 4 Days/Month
-                </span>
+                <span class="text-slate-400">2 Shukla Paksha + 2 Krishna Paksha cycles</span>
             </div>
-            <div class="flex items-center space-x-2 text-[11px] text-slate-300 overflow-x-auto pb-1 sm:pb-0">
-                <span class="bg-slate-800/80 px-2 py-0.5 rounded border border-slate-700/60 whitespace-nowrap">Nifty: ±10 Buffer</span>
-                <span class="bg-slate-800/80 px-2 py-0.5 rounded border border-slate-700/60 whitespace-nowrap">Bank Nifty: ±50 Buffer</span>
-                <span class="bg-slate-800/80 px-2 py-0.5 rounded border border-slate-700/60 text-amber-300 whitespace-nowrap">Exit: 15:00 Sharp</span>
+
+            <div class="flex items-center space-x-2 text-[11px] font-mono overflow-x-auto pb-0.5">
+                <span class="bg-space-850 px-2.5 py-1 rounded border border-white/[0.08] text-emerald-300 flex items-center gap-1">
+                    <i data-lucide="shield" class="w-3 h-3"></i> Nifty: ±10 Buffer
+                </span>
+                <span class="bg-space-850 px-2.5 py-1 rounded border border-white/[0.08] text-amber-300 flex items-center gap-1">
+                    <i data-lucide="shield" class="w-3 h-3"></i> Bank Nifty: ±50 Buffer
+                </span>
+                <span class="bg-space-850 px-2.5 py-1 rounded border border-white/[0.08] text-purple-300 flex items-center gap-1">
+                    <i data-lucide="clock" class="w-3 h-3"></i> Exit: 15:00 Sharp
+                </span>
             </div>
         </div>
     </div>
 
-    <!-- Main Container -->
+    <!-- Main Content -->
     <main class="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-5 grid grid-cols-1 lg:grid-cols-12 gap-5">
 
-        <!-- Left: Upcoming Radar & Quick Guide (4 Cols) -->
+        <!-- Left Column: Radar & Quick Rules (4 Cols) -->
         <div class="lg:col-span-4 space-y-4">
 
             <!-- Today's Status Card -->
-            <div class="bg-[#131b2e] border border-[#232f48] rounded-xl p-4 shadow-sm">
-                <div class="flex items-center justify-between mb-2">
-                    <span class="text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-                        <i data-lucide="zap" class="w-4 h-4 text-amber-400"></i> Signal Radar
+            <div class="glass-card rounded-2xl p-4 shadow-xl relative overflow-hidden">
+                <div class="flex items-center justify-between mb-3">
+                    <span class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                        <i data-lucide="radio" class="w-4 h-4 text-amber-400 animate-pulse"></i> Live Market Radar
                     </span>
-                    <span id="today-date-badge" class="text-xs font-mono bg-slate-800 px-2 py-0.5 rounded text-slate-300">--</span>
+                    <span id="today-date-badge" class="text-xs font-mono bg-white/[0.06] border border-white/10 px-2.5 py-0.5 rounded-full text-slate-300">--</span>
                 </div>
                 <div id="today-alert-content"></div>
             </div>
 
-            <!-- Upcoming 4-Trade List -->
-            <div class="bg-[#131b2e] border border-[#232f48] rounded-xl p-4 shadow-sm">
+            <!-- Next Actionable Trading Dates -->
+            <div class="glass-card rounded-2xl p-4 shadow-xl">
                 <div class="flex items-center justify-between mb-3">
-                    <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-                        <i data-lucide="calendar-clock" class="w-4 h-4 text-purple-400"></i> Next Actionable Dates
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                        <i data-lucide="calendar-check-2" class="w-4 h-4 text-purple-400"></i> Next 4 Action Dates
                     </h3>
-                    <span class="text-[11px] text-purple-400 font-medium">4 per month</span>
+                    <span class="text-[11px] font-mono text-purple-300 bg-purple-500/10 px-2 py-0.5 rounded-full border border-purple-500/20">Monthly</span>
                 </div>
-                <div id="upcoming-list" class="space-y-2 max-h-[300px] overflow-y-auto pr-1"></div>
+                <div id="upcoming-list" class="space-y-2.5 max-h-[310px] overflow-y-auto pr-1"></div>
             </div>
 
-            <!-- 15m Rule Card -->
-            <div class="bg-[#131b2e] border border-[#232f48] rounded-xl p-4 text-xs space-y-2.5 shadow-sm">
-                <h3 class="font-semibold text-slate-200 flex items-center gap-1.5 border-b border-[#232f48] pb-2">
-                    <i data-lucide="sliders" class="w-4 h-4 text-emerald-400"></i> 15m Setup Rules & Buffers
+            <!-- Visual 15-Minute Strategy Cheatsheet -->
+            <div class="glass-card rounded-2xl p-4 text-xs space-y-3 shadow-xl">
+                <h3 class="font-bold text-slate-200 flex items-center gap-2 border-b border-white/[0.08] pb-2.5">
+                    <i data-lucide="trending-up" class="w-4 h-4 text-emerald-400"></i> 15-Minute Price Action Rules
                 </h3>
-                <div class="space-y-2 text-slate-300">
-                    <div class="p-2 rounded bg-emerald-950/20 border border-emerald-900/40">
-                        <span class="font-semibold text-emerald-400">🟢 Buy Setup:</span>
-                        <p class="mt-0.5 text-slate-300">Two 15m green candles making Higher Highs. Buy above Candle 2 High + 10 pts. SL = Candle 2 Low - 10 pts.</p>
+                <div class="space-y-2.5">
+                    <div class="p-3 rounded-xl bg-emerald-950/25 border border-emerald-500/30 space-y-1">
+                        <div class="font-bold text-emerald-400 flex items-center gap-1.5">
+                            <i data-lucide="arrow-up-right" class="w-4 h-4"></i> Buy Entry Setup
+                        </div>
+                        <p class="text-slate-300 leading-relaxed text-[11px]">
+                            Wait for <strong>two consecutive 15m green candles</strong> with Higher Highs. Place Buy Order at <strong>Candle 2 High + 10 pts buffer</strong>. SL = Candle 2 Low - 10 pts.
+                        </p>
                     </div>
-                    <div class="p-2 rounded bg-rose-950/20 border border-rose-900/40">
-                        <span class="font-semibold text-rose-400">🔴 Sell Setup:</span>
-                        <p class="mt-0.5 text-slate-300">Two 15m red candles making Lower Lows. Sell below Candle 2 Low - 10 pts. SL = Candle 2 High + 10 pts.</p>
+
+                    <div class="p-3 rounded-xl bg-rose-950/25 border border-rose-500/30 space-y-1">
+                        <div class="font-bold text-rose-400 flex items-center gap-1.5">
+                            <i data-lucide="arrow-down-right" class="w-4 h-4"></i> Sell Entry Setup
+                        </div>
+                        <p class="text-slate-300 leading-relaxed text-[11px]">
+                            Wait for <strong>two consecutive 15m red candles</strong> with Lower Lows. Place Sell Order at <strong>Candle 2 Low - 10 pts buffer</strong>. SL = Candle 2 High + 10 pts.
+                        </p>
                     </div>
-                    <div class="p-2 rounded bg-amber-950/20 border border-amber-900/40">
-                        <span class="font-semibold text-amber-400">⚡ Reversal Setup:</span>
-                        <p class="mt-0.5 text-slate-300">If Trade 1 SL is hit (-80 pts), reverse into opposite 2-candle confirmation (ride to +180 pts target as per chart).</p>
+
+                    <div class="p-3 rounded-xl bg-amber-950/25 border border-amber-500/30 space-y-1">
+                        <div class="font-bold text-amber-400 flex items-center gap-1.5">
+                            <i data-lucide="repeat-2" class="w-4 h-4"></i> Stop Loss & Reversal
+                        </div>
+                        <p class="text-slate-300 leading-relaxed text-[11px]">
+                            If Trade 1 SL is hit (e.g. -80 pts), instantly reverse into opposite 2-candle confirmation (ride to +180 pts target as shown on chart).
+                        </p>
                     </div>
-                    <div class="p-2 rounded bg-slate-800/40 border border-slate-700/50">
-                        <span class="font-semibold text-purple-400">📅 Holiday Shifts:</span>
-                        <p class="mt-0.5 text-slate-400">Sat-Sun $\rightarrow$ Friday & Monday. Sun-Mon $\rightarrow$ Friday & Monday. Midweek Holiday $\rightarrow$ Single day trade.</p>
+
+                    <div class="p-2.5 rounded-xl bg-space-850 border border-white/[0.06] text-slate-400 text-[11px]">
+                        <span class="text-purple-300 font-semibold">⚡ Weekend Shifts:</span> Sat–Sun shifts to Friday & Monday. Sun–Mon shifts to Friday & Monday. Midweek Holiday $\rightarrow$ Single day trade.
                     </div>
                 </div>
             </div>
 
         </div>
 
-        <!-- Right: Interactive Trading Calendar (8 Cols) -->
+        <!-- Right Column: Interactive Calendar & Timeline (8 Cols) -->
         <div class="lg:col-span-8 space-y-4">
 
-            <!-- Month/Year Navigation -->
-            <div class="bg-[#131b2e] border border-[#232f48] rounded-xl p-3 sm:p-4 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-sm">
-                <div class="flex items-center space-x-2">
-                    <button id="btn-prev-month" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">
-                        <i data-lucide="chevron-left" class="w-4 h-4"></i>
-                    </button>
+            <!-- Calendar Header with 1-Tap Month Switcher -->
+            <div class="glass-card rounded-2xl p-4 shadow-xl space-y-3.5">
+                
+                <!-- Year & View Switcher Bar -->
+                <div class="flex flex-col sm:flex-row items-center justify-between gap-3">
                     <div class="flex items-center space-x-2">
-                        <select id="select-month" class="bg-slate-800 text-slate-100 text-sm font-semibold rounded-lg px-2.5 py-1.5 border border-slate-700 focus:outline-none">
-                            <option value="1">January</option>
-                            <option value="2">February</option>
-                            <option value="3">March</option>
-                            <option value="4">April</option>
-                            <option value="5">May</option>
-                            <option value="6">June</option>
-                            <option value="7">July</option>
-                            <option value="8">August</option>
-                            <option value="9">September</option>
-                            <option value="10">October</option>
-                            <option value="11">November</option>
-                            <option value="12">December</option>
-                        </select>
-                        <select id="select-year" class="bg-slate-800 text-slate-100 text-sm font-semibold rounded-lg px-2.5 py-1.5 border border-slate-700 focus:outline-none">
-                            <option value="2025" selected>2025</option>
-                            <option value="2026">2026</option>
-                        </select>
+                        <div class="bg-space-950 border border-white/10 rounded-xl p-1 flex items-center space-x-1">
+                            <button id="btn-year-2025" onclick="setYear(2025)" class="px-3 py-1 rounded-lg text-xs font-bold transition bg-purple-600 text-white shadow-md">2025</button>
+                            <button id="btn-year-2026" onclick="setYear(2026)" class="px-3 py-1 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition">2026</button>
+                        </div>
+
+                        <div class="flex items-center space-x-1">
+                            <button id="btn-prev-month" class="p-1.5 rounded-lg bg-space-850 hover:bg-space-800 text-slate-300 border border-white/10 transition">
+                                <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                            </button>
+                            <span id="current-month-label" class="font-bold text-sm sm:text-base px-2 text-white min-w-[110px] text-center">January 2025</span>
+                            <button id="btn-next-month" class="p-1.5 rounded-lg bg-space-850 hover:bg-space-800 text-slate-300 border border-white/10 transition">
+                                <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                            </button>
+                        </div>
                     </div>
-                    <button id="btn-next-month" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">
-                        <i data-lucide="chevron-right" class="w-4 h-4"></i>
-                    </button>
+
+                    <!-- View Mode Toggle (Grid vs Stream) -->
+                    <div class="flex items-center space-x-1 bg-space-950 border border-white/10 rounded-xl p-1 text-xs">
+                        <button id="tab-grid" onclick="setViewMode('grid')" class="px-3 py-1 rounded-lg font-bold bg-slate-800 text-amber-300 flex items-center gap-1.5 transition">
+                            <i data-lucide="layout-grid" class="w-3.5 h-3.5"></i>
+                            <span>Grid View</span>
+                        </button>
+                        <button id="tab-stream" onclick="setViewMode('stream')" class="px-3 py-1 rounded-lg font-semibold text-slate-400 hover:text-white flex items-center gap-1.5 transition">
+                            <i data-lucide="list-ordered" class="w-3.5 h-3.5"></i>
+                            <span>Timeline Stream</span>
+                        </button>
+                    </div>
                 </div>
 
-                <div class="flex items-center space-x-3 text-xs">
-                    <span class="flex items-center gap-1.5">
-                        <span class="w-2.5 h-2.5 rounded bg-emerald-500 inline-block"></span>
-                        <span class="text-slate-300">Trade Day</span>
-                    </span>
-                    <span class="flex items-center gap-1.5">
-                        <span class="w-2.5 h-2.5 rounded bg-amber-500 inline-block"></span>
-                        <span class="text-slate-300">Shifted Day</span>
-                    </span>
-                    <span class="flex items-center gap-1.5">
-                        <span class="w-2.5 h-2.5 rounded bg-rose-500 inline-block"></span>
-                        <span class="text-slate-300">NSE Holiday</span>
-                    </span>
+                <!-- 1-Tap 12-Month Quick Switcher Pills -->
+                <div class="flex items-center space-x-1.5 overflow-x-auto no-scrollbar py-1">
+                    <button onclick="setMonth(1)" class="month-pill px-3 py-1 rounded-lg text-xs font-semibold whitespace-nowrap transition bg-amber-500/20 text-amber-300 border border-amber-500/40" data-month="1">Jan</button>
+                    <button onclick="setMonth(2)" class="month-pill px-3 py-1 rounded-lg text-xs font-medium whitespace-nowrap transition bg-space-850 hover:bg-space-800 text-slate-400 hover:text-white border border-white/[0.06]" data-month="2">Feb</button>
+                    <button onclick="setMonth(3)" class="month-pill px-3 py-1 rounded-lg text-xs font-medium whitespace-nowrap transition bg-space-850 hover:bg-space-800 text-slate-400 hover:text-white border border-white/[0.06]" data-month="3">Mar</button>
+                    <button onclick="setMonth(4)" class="month-pill px-3 py-1 rounded-lg text-xs font-medium whitespace-nowrap transition bg-space-850 hover:bg-space-800 text-slate-400 hover:text-white border border-white/[0.06]" data-month="4">Apr</button>
+                    <button onclick="setMonth(5)" class="month-pill px-3 py-1 rounded-lg text-xs font-medium whitespace-nowrap transition bg-space-850 hover:bg-space-800 text-slate-400 hover:text-white border border-white/[0.06]" data-month="5">May</button>
+                    <button onclick="setMonth(6)" class="month-pill px-3 py-1 rounded-lg text-xs font-medium whitespace-nowrap transition bg-space-850 hover:bg-space-800 text-slate-400 hover:text-white border border-white/[0.06]" data-month="6">Jun</button>
+                    <button onclick="setMonth(7)" class="month-pill px-3 py-1 rounded-lg text-xs font-medium whitespace-nowrap transition bg-space-850 hover:bg-space-800 text-slate-400 hover:text-white border border-white/[0.06]" data-month="7">Jul</button>
+                    <button onclick="setMonth(8)" class="month-pill px-3 py-1 rounded-lg text-xs font-medium whitespace-nowrap transition bg-space-850 hover:bg-space-800 text-slate-400 hover:text-white border border-white/[0.06]" data-month="8">Aug</button>
+                    <button onclick="setMonth(9)" class="month-pill px-3 py-1 rounded-lg text-xs font-medium whitespace-nowrap transition bg-space-850 hover:bg-space-800 text-slate-400 hover:text-white border border-white/[0.06]" data-month="9">Sep</button>
+                    <button onclick="setMonth(10)" class="month-pill px-3 py-1 rounded-lg text-xs font-medium whitespace-nowrap transition bg-space-850 hover:bg-space-800 text-slate-400 hover:text-white border border-white/[0.06]" data-month="10">Oct</button>
+                    <button onclick="setMonth(11)" class="month-pill px-3 py-1 rounded-lg text-xs font-medium whitespace-nowrap transition bg-space-850 hover:bg-space-800 text-slate-400 hover:text-white border border-white/[0.06]" data-month="11">Nov</button>
+                    <button onclick="setMonth(12)" class="month-pill px-3 py-1 rounded-lg text-xs font-medium whitespace-nowrap transition bg-space-850 hover:bg-space-800 text-slate-400 hover:text-white border border-white/[0.06]" data-month="12">Dec</button>
                 </div>
             </div>
 
-            <!-- Calendar Grid -->
-            <div class="bg-[#131b2e] border border-[#232f48] rounded-xl p-2.5 sm:p-3 shadow-sm">
-                <div class="grid grid-cols-7 gap-1 text-center font-semibold text-xs text-slate-400 mb-2 py-1 border-b border-[#232f48]">
-                    <div class="text-slate-400">Sun</div>
+            <!-- View 1: Calendar Grid -->
+            <div id="view-calendar-grid" class="glass-card rounded-2xl p-3 sm:p-4 shadow-xl">
+                <!-- Day Names -->
+                <div class="grid grid-cols-7 gap-1 text-center font-bold text-xs text-slate-400 mb-2 py-1 border-b border-white/[0.08]">
+                    <div class="text-rose-400/80">Sun</div>
                     <div>Mon</div>
                     <div>Tue</div>
                     <div>Wed</div>
                     <div>Thu</div>
                     <div>Fri</div>
-                    <div class="text-slate-400">Sat</div>
+                    <div class="text-rose-400/80">Sat</div>
                 </div>
                 <div id="calendar-cells" class="calendar-grid"></div>
             </div>
 
-            <!-- Month Summary Bar -->
-            <div id="month-summary-bar" class="bg-[#131b2e] border border-[#232f48] rounded-xl px-4 py-2.5 flex items-center justify-between text-xs text-slate-400">
-                <span id="month-trade-count">Loading month...</span>
-                <span class="text-purple-400 hidden sm:flex items-center gap-1">
-                    <i data-lucide="info" class="w-3.5 h-3.5"></i> Tap highlighted date to open Trade Checklist & Calculator
+            <!-- View 2: Timeline Stream (List of 4 Trades) -->
+            <div id="view-timeline-stream" class="hidden glass-card rounded-2xl p-4 shadow-xl space-y-3">
+                <div class="flex items-center justify-between pb-2 border-b border-white/[0.08]">
+                    <h4 class="font-bold text-sm text-slate-200 flex items-center gap-2">
+                        <i data-lucide="list-ordered" class="w-4 h-4 text-amber-400"></i>
+                        Actionable Trading Sessions for <span id="stream-month-title" class="text-amber-300">January 2025</span>
+                    </h4>
+                    <span class="text-xs text-slate-400">4 Target Days</span>
+                </div>
+                <div id="timeline-stream-container" class="space-y-3"></div>
+            </div>
+
+            <!-- Calendar Footer Legend -->
+            <div class="glass-card rounded-2xl px-4 py-3 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-400">
+                <div class="flex items-center space-x-3">
+                    <span class="flex items-center gap-1.5">
+                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-sm shadow-emerald-400/50"></span>
+                        <span class="text-slate-300">Action Day</span>
+                    </span>
+                    <span class="flex items-center gap-1.5">
+                        <span class="w-2.5 h-2.5 rounded-full bg-amber-400 shadow-sm shadow-amber-400/50"></span>
+                        <span class="text-slate-300">Shifted (Fri/Mon)</span>
+                    </span>
+                    <span class="flex items-center gap-1.5">
+                        <span class="w-2.5 h-2.5 rounded-full bg-rose-500 shadow-sm shadow-rose-500/50"></span>
+                        <span class="text-slate-300">NSE Holiday</span>
+                    </span>
+                </div>
+                <span class="text-purple-400 font-medium hidden sm:flex items-center gap-1">
+                    <i data-lucide="mouse-pointer-click" class="w-3.5 h-3.5"></i> Tap any trade day to launch setup & visual chart
                 </span>
             </div>
 
@@ -268,131 +401,153 @@
 
     </main>
 
-    <!-- Modal: Date Trade Plan & 15m Calculator -->
-    <div id="modal-trade-plan" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3 sm:p-4">
-        <div class="bg-[#131b2e] border border-[#232f48] rounded-2xl max-w-2xl w-full p-4 sm:p-6 space-y-4 modal-fade-in max-h-[92vh] overflow-y-auto">
+    <!-- Modal: Trade Execution Plan & Interactive Candlestick Chart -->
+    <div id="modal-trade-plan" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-3 sm:p-4">
+        <div class="glass-card rounded-3xl max-w-3xl w-full p-4 sm:p-6 space-y-4 modal-fade-in max-h-[92vh] overflow-y-auto border border-white/10 shadow-2xl">
             
-            <div class="flex items-start justify-between border-b border-[#232f48] pb-3">
+            <!-- Modal Header -->
+            <div class="flex items-start justify-between border-b border-white/[0.08] pb-3.5">
                 <div>
                     <div class="flex items-center space-x-2">
-                        <span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-900/50 text-emerald-300 border border-emerald-700/60">
+                        <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
                             Actionable Trading Day
                         </span>
-                        <span id="modal-shift-tag" class="hidden px-2 py-0.5 rounded text-[11px] font-semibold bg-amber-900/50 text-amber-300 border border-amber-700/60">
-                            Weekend/Holiday Shift
+                        <span id="modal-shift-tag" class="hidden px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40">
+                            Weekend / Holiday Shift
                         </span>
                     </div>
-                    <h3 id="modal-trade-date-title" class="text-lg sm:text-xl font-bold text-white mt-1">Date</h3>
+                    <h3 id="modal-trade-date-title" class="text-xl sm:text-2xl font-extrabold text-white mt-1.5">Date</h3>
                     <p id="modal-tithi-span" class="text-xs text-slate-400 mt-0.5"></p>
-                    <p id="modal-shift-reason" class="text-xs text-amber-400 mt-1 font-medium"></p>
+                    <p id="modal-shift-reason" class="text-xs text-amber-300 mt-1 font-medium"></p>
                 </div>
-                <button id="modal-close-btn" class="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition">
-                    <i data-lucide="x" class="w-5 h-5"></i>
-                </button>
+                <div class="flex items-center space-x-2">
+                    <button id="btn-copy-trade-plan" onclick="copyTradePlan()" class="px-3 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-xs font-bold text-white transition flex items-center gap-1.5 shadow-lg shadow-purple-900/40">
+                        <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                        <span id="copy-btn-text">Copy Plan</span>
+                    </button>
+                    <button id="modal-close-btn" class="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-white/10 transition">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
+                </div>
             </div>
 
-            <!-- Live 15-Minute Calculator -->
-            <div class="bg-[#0b0f19] border border-[#232f48] rounded-xl p-3 sm:p-4 space-y-3">
+            <!-- Live 15m Calculator & Candlestick Visualization -->
+            <div class="bg-space-950 border border-white/[0.08] rounded-2xl p-4 space-y-3.5 shadow-inner">
                 <div class="flex items-center justify-between">
-                    <h4 class="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
-                        <i data-lucide="calculator" class="w-4 h-4 text-purple-400"></i> Live 15m Calculator
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-slate-200 flex items-center gap-2">
+                        <i data-lucide="calculator" class="w-4 h-4 text-purple-400"></i>
+                        Live 15m Level Calculator & Visualizer
                     </h4>
-                    <select id="calc-symbol" class="bg-slate-800 text-xs text-slate-200 rounded px-2 py-1 border border-slate-700">
+                    <select id="calc-symbol" class="bg-space-850 text-xs font-semibold text-slate-200 rounded-lg px-2.5 py-1 border border-white/10 focus:outline-none focus:border-purple-500">
                         <option value="NIFTY" selected>NIFTY 50 (Buffer: 10 pts)</option>
                         <option value="BANKNIFTY">BANK NIFTY (Buffer: 50 pts)</option>
                     </select>
                 </div>
 
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                <!-- 4 Candle Inputs -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs">
                     <div>
-                        <label class="block text-[11px] text-slate-400 mb-1">Candle 1 High</label>
-                        <input type="number" id="c1-high" placeholder="23350" class="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-slate-100 text-xs focus:outline-none focus:border-purple-500">
+                        <label class="block text-[11px] font-semibold text-slate-400 mb-1">Candle 1 High</label>
+                        <input type="number" id="c1-high" placeholder="23350" class="w-full bg-space-850 border border-white/10 rounded-xl px-3 py-2 text-slate-100 font-mono text-xs focus:outline-none focus:border-purple-500">
                     </div>
                     <div>
-                        <label class="block text-[11px] text-slate-400 mb-1">Candle 1 Low</label>
-                        <input type="number" id="c1-low" placeholder="23270" class="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-slate-100 text-xs focus:outline-none focus:border-purple-500">
+                        <label class="block text-[11px] font-semibold text-slate-400 mb-1">Candle 1 Low</label>
+                        <input type="number" id="c1-low" placeholder="23270" class="w-full bg-space-850 border border-white/10 rounded-xl px-3 py-2 text-slate-100 font-mono text-xs focus:outline-none focus:border-purple-500">
                     </div>
                     <div>
-                        <label class="block text-[11px] text-slate-400 mb-1">Candle 2 High</label>
-                        <input type="number" id="c2-high" placeholder="23370" class="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-slate-100 text-xs focus:outline-none focus:border-purple-500">
+                        <label class="block text-[11px] font-semibold text-slate-400 mb-1">Candle 2 High</label>
+                        <input type="number" id="c2-high" placeholder="23370" class="w-full bg-space-850 border border-white/10 rounded-xl px-3 py-2 text-slate-100 font-mono text-xs focus:outline-none focus:border-purple-500">
                     </div>
                     <div>
-                        <label class="block text-[11px] text-slate-400 mb-1">Candle 2 Low</label>
-                        <input type="number" id="c2-low" placeholder="23290" class="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-slate-100 text-xs focus:outline-none focus:border-purple-500">
+                        <label class="block text-[11px] font-semibold text-slate-400 mb-1">Candle 2 Low</label>
+                        <input type="number" id="c2-low" placeholder="23290" class="w-full bg-space-850 border border-white/10 rounded-xl px-3 py-2 text-slate-100 font-mono text-xs focus:outline-none focus:border-purple-500">
                     </div>
                 </div>
 
-                <!-- Calculator Output Cards -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
-                    <div class="bg-emerald-950/30 border border-emerald-800/40 rounded-lg p-2.5 space-y-1">
-                        <div class="text-[11px] font-semibold text-emerald-400 uppercase tracking-wide">Buy Order (Higher High)</div>
-                        <div class="text-xs text-slate-300 flex justify-between">
+                <!-- Interactive Visual Candlestick Preview -->
+                <div id="chart-preview-container" class="p-3 bg-space-900 border border-white/[0.06] rounded-xl flex flex-col items-center justify-center">
+                    <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2 flex items-center justify-between w-full">
+                        <span>Visual Candlestick Setup</span>
+                        <span id="chart-pattern-badge" class="text-[10px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-400">Enter candle values above</span>
+                    </div>
+                    <svg id="candlestick-svg" width="100%" height="130" viewBox="0 0 500 130" class="overflow-visible"></svg>
+                </div>
+
+                <!-- Output Level Cards -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div class="bg-emerald-950/30 border border-emerald-500/40 rounded-xl p-3 space-y-1.5">
+                        <div class="text-[11px] font-extrabold text-emerald-400 uppercase tracking-wider flex items-center gap-1">
+                            <i data-lucide="arrow-up-circle" class="w-3.5 h-3.5"></i> Buy Order (Higher High)
+                        </div>
+                        <div class="text-xs text-slate-300 flex justify-between font-mono">
                             <span>Buy Entry:</span>
-                            <span id="res-buy-entry" class="font-bold text-white font-mono">--</span>
+                            <span id="res-buy-entry" class="font-extrabold text-white">--</span>
                         </div>
-                        <div class="text-xs text-slate-300 flex justify-between">
+                        <div class="text-xs text-slate-300 flex justify-between font-mono">
                             <span>1st Stop Loss:</span>
-                            <span id="res-buy-sl" class="font-semibold text-rose-400 font-mono">--</span>
+                            <span id="res-buy-sl" class="font-bold text-rose-400">--</span>
                         </div>
                     </div>
 
-                    <div class="bg-rose-950/30 border border-rose-800/40 rounded-lg p-2.5 space-y-1">
-                        <div class="text-[11px] font-semibold text-rose-400 uppercase tracking-wide">Sell Order (Lower Low)</div>
-                        <div class="text-xs text-slate-300 flex justify-between">
-                            <span>Sell Entry:</span>
-                            <span id="res-sell-entry" class="font-bold text-white font-mono">--</span>
+                    <div class="bg-rose-950/30 border border-rose-500/40 rounded-xl p-3 space-y-1.5">
+                        <div class="text-[11px] font-extrabold text-rose-400 uppercase tracking-wider flex items-center gap-1">
+                            <i data-lucide="arrow-down-circle" class="w-3.5 h-3.5"></i> Sell Order (Lower Low)
                         </div>
-                        <div class="text-xs text-slate-300 flex justify-between">
+                        <div class="text-xs text-slate-300 flex justify-between font-mono">
+                            <span>Sell Entry:</span>
+                            <span id="res-sell-entry" class="font-extrabold text-white">--</span>
+                        </div>
+                        <div class="text-xs text-slate-300 flex justify-between font-mono">
                             <span>1st Stop Loss:</span>
-                            <span id="res-sell-sl" class="font-semibold text-rose-400 font-mono">--</span>
+                            <span id="res-sell-sl" class="font-bold text-rose-400">--</span>
                         </div>
                     </div>
                 </div>
 
-                <div class="p-2 rounded bg-purple-950/20 border border-purple-800/40 text-xs text-purple-200 flex items-center justify-between">
-                    <span>⚡ <strong>Reversal Rule:</strong> If Trade 1 SL hit, enter reverse on 2 opposite candles.</span>
-                    <span class="font-mono text-amber-300 font-semibold">Exit: 15:00 Sharp</span>
+                <div class="p-2.5 rounded-xl bg-purple-950/30 border border-purple-500/30 text-xs text-purple-200 flex items-center justify-between">
+                    <span>⚡ <strong>Reversal Setup:</strong> If 1st trade hits SL, immediately reverse on 2 opposite candles.</span>
+                    <span class="font-mono text-amber-300 font-extrabold px-2 py-0.5 rounded bg-amber-400/10">Exit: 15:00 Sharp</span>
                 </div>
             </div>
 
             <!-- Execution Checklist -->
-            <div class="space-y-1.5 text-xs">
-                <h4 class="font-semibold text-slate-300 uppercase tracking-wider text-[11px]">Trade Execution Checklist</h4>
+            <div class="space-y-2 text-xs">
+                <h4 class="font-bold text-slate-300 uppercase tracking-wider text-[11px]">Execution Checklist</h4>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-slate-300">
-                    <label class="flex items-center space-x-2 bg-slate-800/40 p-2 rounded border border-slate-700/50 cursor-pointer">
-                        <input type="checkbox" class="rounded text-purple-600 focus:ring-0">
+                    <label class="flex items-center space-x-2.5 bg-space-850 p-2.5 rounded-xl border border-white/[0.06] cursor-pointer hover:bg-space-800 transition">
+                        <input type="checkbox" class="w-4 h-4 rounded text-purple-600 focus:ring-0">
                         <span>Check 1st & 2nd 15m candle close (9:45 AM)</span>
                     </label>
-                    <label class="flex items-center space-x-2 bg-slate-800/40 p-2 rounded border border-slate-700/50 cursor-pointer">
-                        <input type="checkbox" class="rounded text-purple-600 focus:ring-0">
+                    <label class="flex items-center space-x-2.5 bg-space-850 p-2.5 rounded-xl border border-white/[0.06] cursor-pointer hover:bg-space-800 transition">
+                        <input type="checkbox" class="w-4 h-4 rounded text-purple-600 focus:ring-0">
                         <span>Place Buffer Entry (10 pts Nifty)</span>
                     </label>
-                    <label class="flex items-center space-x-2 bg-slate-800/40 p-2 rounded border border-slate-700/50 cursor-pointer">
-                        <input type="checkbox" class="rounded text-purple-600 focus:ring-0">
+                    <label class="flex items-center space-x-2.5 bg-space-850 p-2.5 rounded-xl border border-white/[0.06] cursor-pointer hover:bg-space-800 transition">
+                        <input type="checkbox" class="w-4 h-4 rounded text-purple-600 focus:ring-0">
                         <span>Set SL at Candle 2 Low/High</span>
                     </label>
-                    <label class="flex items-center space-x-2 bg-slate-800/40 p-2 rounded border border-slate-700/50 cursor-pointer">
-                        <input type="checkbox" class="rounded text-purple-600 focus:ring-0">
+                    <label class="flex items-center space-x-2.5 bg-space-850 p-2.5 rounded-xl border border-white/[0.06] cursor-pointer hover:bg-space-800 transition">
+                        <input type="checkbox" class="w-4 h-4 rounded text-purple-600 focus:ring-0">
                         <span>If 1st SL hit, watch 2-candle reversal</span>
                     </label>
-                    <label class="flex items-center space-x-2 bg-slate-800/40 p-2 rounded border border-slate-700/50 cursor-pointer col-span-1 sm:col-span-2">
-                        <input type="checkbox" class="rounded text-purple-600 focus:ring-0">
+                    <label class="flex items-center space-x-2.5 bg-space-850 p-2.5 rounded-xl border border-white/[0.06] cursor-pointer hover:bg-space-800 transition col-span-1 sm:col-span-2">
+                        <input type="checkbox" class="w-4 h-4 rounded text-purple-600 focus:ring-0">
                         <span>Strict Square-off at 3:00 PM (15:00 IST)</span>
                     </label>
                 </div>
             </div>
 
-            <!-- Date Trade Journal / Notes Section -->
-            <div class="border-t border-[#232f48] pt-3 space-y-2.5">
+            <!-- Date Journal Form -->
+            <div class="border-t border-white/[0.08] pt-3.5 space-y-3">
                 <div class="flex items-center justify-between">
-                    <h4 class="text-xs font-semibold uppercase tracking-wider text-slate-300">Date Trade Journal</h4>
-                    <span class="text-[11px] text-slate-400">Saved in your browser</span>
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-slate-300">Date Trade Journal</h4>
+                    <span class="text-[11px] text-slate-400">Private browser storage</span>
                 </div>
 
                 <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
                     <div>
-                        <label class="block text-[11px] text-slate-400 mb-1">Trade Executed</label>
-                        <select id="journal-type" class="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-slate-200">
+                        <label class="block text-[11px] font-semibold text-slate-400 mb-1">Trade Executed</label>
+                        <select id="journal-type" class="w-full bg-space-850 border border-white/10 rounded-xl px-2.5 py-1.5 text-slate-200">
                             <option value="BUY">BUY</option>
                             <option value="SELL">SELL</option>
                             <option value="BUY -> REVERSAL SELL">BUY &rarr; REVERSAL SELL</option>
@@ -400,23 +555,23 @@
                         </select>
                     </div>
                     <div>
-                        <label class="block text-[11px] text-slate-400 mb-1">Entry Price</label>
-                        <input type="number" id="journal-entry" placeholder="23380" class="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-slate-200">
+                        <label class="block text-[11px] font-semibold text-slate-400 mb-1">Entry Price</label>
+                        <input type="number" id="journal-entry" placeholder="23380" class="w-full bg-space-850 border border-white/10 rounded-xl px-2.5 py-1.5 text-slate-200 font-mono">
                     </div>
                     <div>
-                        <label class="block text-[11px] text-slate-400 mb-1">Exit Price</label>
-                        <input type="number" id="journal-exit" placeholder="23100" class="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-slate-200">
+                        <label class="block text-[11px] font-semibold text-slate-400 mb-1">Exit Price</label>
+                        <input type="number" id="journal-exit" placeholder="23100" class="w-full bg-space-850 border border-white/10 rounded-xl px-2.5 py-1.5 text-slate-200 font-mono">
                     </div>
                     <div>
-                        <label class="block text-[11px] text-slate-400 mb-1">Points P&L</label>
-                        <input type="number" id="journal-pl" placeholder="+100" class="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-slate-200">
+                        <label class="block text-[11px] font-semibold text-slate-400 mb-1">Points P&L</label>
+                        <input type="number" id="journal-pl" placeholder="+100" class="w-full bg-space-850 border border-white/10 rounded-xl px-2.5 py-1.5 text-slate-200 font-mono">
                     </div>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
                     <div>
-                        <label class="block text-[11px] text-slate-400 mb-1">Outcome</label>
-                        <select id="journal-outcome" class="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-slate-200">
+                        <label class="block text-[11px] font-semibold text-slate-400 mb-1">Outcome</label>
+                        <select id="journal-outcome" class="w-full bg-space-850 border border-white/10 rounded-xl px-2.5 py-1.5 text-slate-200">
                             <option value="Target Hit">Target Hit</option>
                             <option value="Reversal Target Hit">Reversal Target Hit</option>
                             <option value="SL Hit">SL Hit</option>
@@ -425,31 +580,31 @@
                         </select>
                     </div>
                     <div>
-                        <label class="block text-[11px] text-slate-400 mb-1">Notes</label>
-                        <input type="text" id="journal-notes" placeholder="Notes on market reaction..." class="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1.5 text-slate-200">
+                        <label class="block text-[11px] font-semibold text-slate-400 mb-1">Notes</label>
+                        <input type="text" id="journal-notes" placeholder="Notes on candle size, market reaction..." class="w-full bg-space-850 border border-white/10 rounded-xl px-2.5 py-1.5 text-slate-200">
                     </div>
                 </div>
 
                 <div class="flex justify-end pt-1">
-                    <button id="btn-save-journal" class="px-4 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-xs font-semibold text-white transition flex items-center gap-1.5">
-                        <i data-lucide="check" class="w-3.5 h-3.5"></i> Save Entry
+                    <button id="btn-save-journal" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-xs font-bold text-white transition flex items-center gap-1.5 shadow-lg shadow-emerald-950/40">
+                        <i data-lucide="check" class="w-4 h-4"></i> Save Journal Entry
                     </button>
                 </div>
 
-                <div id="journal-logs-container" class="space-y-1.5 pt-1"></div>
+                <div id="journal-logs-container" class="space-y-2 pt-1"></div>
             </div>
 
         </div>
     </div>
 
-    <!-- Modal: Performance Trade Journal History -->
-    <div id="modal-all-journal" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3 sm:p-4">
-        <div class="bg-[#131b2e] border border-[#232f48] rounded-2xl max-w-2xl w-full p-5 space-y-4 modal-fade-in max-h-[90vh] overflow-y-auto">
-            <div class="flex items-center justify-between border-b border-[#232f48] pb-3">
+    <!-- Modal: Trade Performance Journal History -->
+    <div id="modal-all-journal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-3 sm:p-4">
+        <div class="glass-card rounded-3xl max-w-2xl w-full p-5 space-y-4 modal-fade-in max-h-[90vh] overflow-y-auto border border-white/10 shadow-2xl">
+            <div class="flex items-center justify-between border-b border-white/[0.08] pb-3">
                 <h3 class="text-base font-bold text-white flex items-center gap-2">
-                    <i data-lucide="book-open" class="w-5 h-5 text-emerald-400"></i> Trade Performance Journal
+                    <i data-lucide="book-marked" class="w-5 h-5 text-emerald-400"></i> Trade Performance Journal
                 </h3>
-                <button id="close-journal-modal" class="p-1 rounded text-slate-400 hover:text-white transition">
+                <button id="close-journal-modal" class="p-1.5 rounded-xl text-slate-400 hover:text-white transition">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
@@ -457,9 +612,14 @@
         </div>
     </div>
 
-    <!-- Core Embedded JavaScript & 2025-2026 Dataset -->
+    <!-- Toast Notification for Copy -->
+    <div id="toast" class="fixed bottom-6 right-6 bg-purple-600 text-white px-4 py-2.5 rounded-xl text-xs font-bold shadow-2xl transition-all duration-300 opacity-0 pointer-events-none transform translate-y-3 z-50 flex items-center gap-2">
+        <i data-lucide="check-circle" class="w-4 h-4"></i>
+        <span id="toast-text">Trade plan copied to clipboard!</span>
+    </div>
+
+    <!-- Core Logic & Dataset -->
     <script>
-        // Official NSE Holidays for 2025 and 2026
         const NSE_HOLIDAYS = {
             "2025-01-26": "Republic Day",
             "2025-02-26": "Maha Shivratri",
@@ -472,7 +632,7 @@
             "2025-08-15": "Independence Day",
             "2025-08-27": "Ganesh Chaturthi",
             "2025-10-02": "Mahatma Gandhi Jayanti",
-            "2025-10-21": "Diwali Laxmi Pujan (Muhurat Session)",
+            "2025-10-21": "Diwali Laxmi Pujan (Muhurat)",
             "2025-10-22": "Diwali Balipratipada",
             "2025-11-05": "Guru Nanak Jayanti",
             "2025-12-25": "Christmas",
@@ -493,7 +653,6 @@
             "2026-12-25": "Christmas"
         };
 
-        // All 49 Trayodashi Tithis for 2025 and 2026 from Prokerala Panchang
         const TITHI_DATA = [
             // 2025
             { year: 2025, paksha: 'Shukla Paksha Trayodashi', timing: 'Jan 11, 8:22 am - Jan 12, 6:34 am' },
@@ -576,22 +735,17 @@
         function getPrevTradingDay(d) {
             let cur = new Date(d);
             cur.setDate(cur.getDate() - 1);
-            while (!isTradingDay(cur)) {
-                cur.setDate(cur.getDate() - 1);
-            }
+            while (!isTradingDay(cur)) cur.setDate(cur.getDate() - 1);
             return cur;
         }
 
         function getNextTradingDay(d) {
             let cur = new Date(d);
             cur.setDate(cur.getDate() + 1);
-            while (!isTradingDay(cur)) {
-                cur.setDate(cur.getDate() + 1);
-            }
+            while (!isTradingDay(cur)) cur.setDate(cur.getDate() + 1);
             return cur;
         }
 
-        // Shift engine implementing exact user rules
         function resolveTradingDates(item) {
             const pattern = /([A-Za-z]{3})\s+(\d{1,2})/g;
             let match;
@@ -650,7 +804,7 @@
                 results.push({ date: p, dateStr: formatDateStr(p), isShifted: true, reason: 'Double Holiday Shift: Traded one day before' });
                 results.push({ date: n, dateStr: formatDateStr(n), isShifted: true, reason: 'Double Holiday Shift: Traded one day after' });
             }
-            // Case: One day is holiday (e.g. Wed-Thu where Wed is holiday)
+            // Case: One day is holiday
             else if (!t1 && t2) {
                 results.push({ date: d2, dateStr: formatDateStr(d2), isShifted: false, reason: `Traded on ${getDayName(d2.getDay())} only (${formatDateFriendly(formatDateStr(d1))} was holiday)` });
             }
@@ -672,7 +826,6 @@
             }));
         }
 
-        // Build Master Actionable Trading Dates Lookup
         const ALL_ACTIONABLE_TRADES = [];
         const DATE_MAP = {};
 
@@ -689,8 +842,8 @@
         let currentYear = 2025;
         let currentMonth = 1;
         let selectedDateStr = null;
+        let currentViewMode = 'grid'; // 'grid' or 'stream'
 
-        // LocalStorage Trade Journal Helper
         function getJournal(dateStr) {
             const raw = localStorage.getItem("astro_journal_" + dateStr);
             return raw ? JSON.parse(raw) : [];
@@ -709,7 +862,6 @@
                     entries.forEach(e => all.push(e));
                 }
             }
-            // Add default initial sample trade if empty
             if (all.length === 0) {
                 all.push({
                     date: "2025-01-13",
@@ -719,43 +871,27 @@
                     exit_price: 23100,
                     points_pl: 100,
                     outcome: "Reversal Target Hit (+180 pts after -80 pts SL)",
-                    notes: "First trade stopped out (-80 pts). Reverse trade triggered on 2 red candles, hit target (+180 pts). Net: +100 pts."
+                    notes: "First trade hit SL (-80 pts). Reversal trade below 2 red candles hit target (+180 pts). Net: +100 pts."
                 });
             }
             return all.sort((a, b) => b.date.localeCompare(a.date));
         }
 
-        // UI Initialization
         document.addEventListener("DOMContentLoaded", () => {
-            document.getElementById("select-year").value = "2025";
-            document.getElementById("select-month").value = "1";
-
-            document.getElementById("select-year").addEventListener("change", (e) => {
-                currentYear = parseInt(e.target.value);
-                renderCalendar();
-            });
-            document.getElementById("select-month").addEventListener("change", (e) => {
-                currentMonth = parseInt(e.target.value);
-                renderCalendar();
-            });
             document.getElementById("btn-prev-month").addEventListener("click", () => {
                 currentMonth--;
-                if (currentMonth < 1) { currentMonth = 12; currentYear--; if (currentYear < 2025) currentYear = 2025; }
-                updateNav();
-                renderCalendar();
+                if (currentMonth < 1) { currentMonth = 12; setYear(currentYear - 1); }
+                else updateMonthUI();
             });
             document.getElementById("btn-next-month").addEventListener("click", () => {
                 currentMonth++;
-                if (currentMonth > 12) { currentMonth = 1; currentYear++; if (currentYear > 2026) currentYear = 2026; }
-                updateNav();
-                renderCalendar();
+                if (currentMonth > 12) { currentMonth = 1; setYear(currentYear + 1); }
+                else updateMonthUI();
             });
             document.getElementById("btn-today").addEventListener("click", () => {
                 const now = new Date();
-                currentYear = (now.getFullYear() === 2025 || now.getFullYear() === 2026) ? now.getFullYear() : 2025;
-                currentMonth = now.getMonth() + 1;
-                updateNav();
-                renderCalendar();
+                setYear(now.getFullYear() === 2026 ? 2026 : 2025);
+                setMonth(now.getMonth() + 1);
             });
 
             document.getElementById("modal-close-btn").addEventListener("click", () => {
@@ -766,7 +902,7 @@
                 document.getElementById("modal-all-journal").classList.add("hidden");
             });
 
-            // Calculator Listeners
+            // Calculator Inputs & Visualizer
             ["c1-high", "c1-low", "c2-high", "c2-low", "calc-symbol"].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.addEventListener("input", recalculateLevels);
@@ -791,18 +927,66 @@
                 document.getElementById("journal-exit").value = "";
                 document.getElementById("journal-pl").value = "";
                 document.getElementById("journal-notes").value = "";
+                showToast("Trade journal entry saved!");
             });
 
             renderUpcomingList();
-            renderCalendar();
+            updateMonthUI();
         });
 
-        function updateNav() {
-            document.getElementById("select-year").value = currentYear.toString();
-            document.getElementById("select-month").value = currentMonth.toString();
+        function setYear(yr) {
+            currentYear = yr < 2025 ? 2025 : (yr > 2026 ? 2026 : yr);
+            document.getElementById("btn-year-2025").className = currentYear === 2025 ? 
+                "px-3 py-1 rounded-lg text-xs font-bold transition bg-purple-600 text-white shadow-md" : 
+                "px-3 py-1 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition";
+            document.getElementById("btn-year-2026").className = currentYear === 2026 ? 
+                "px-3 py-1 rounded-lg text-xs font-bold transition bg-purple-600 text-white shadow-md" : 
+                "px-3 py-1 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition";
+            updateMonthUI();
         }
 
-        function renderCalendar() {
+        function setMonth(m) {
+            currentMonth = m;
+            updateMonthUI();
+        }
+
+        function updateMonthUI() {
+            document.getElementById("current-month-label").textContent = `${getMonthName(currentMonth)} ${currentYear}`;
+            document.querySelectorAll(".month-pill").forEach(p => {
+                const mNum = parseInt(p.getAttribute("data-month"));
+                if (mNum === currentMonth) {
+                    p.className = "month-pill px-3 py-1 rounded-lg text-xs font-bold whitespace-nowrap transition bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm";
+                } else {
+                    p.className = "month-pill px-3 py-1 rounded-lg text-xs font-medium whitespace-nowrap transition bg-space-850 hover:bg-space-800 text-slate-400 hover:text-white border border-white/[0.06]";
+                }
+            });
+
+            if (currentViewMode === 'grid') {
+                renderCalendarGrid();
+            } else {
+                renderTimelineStream();
+            }
+        }
+
+        function setViewMode(mode) {
+            currentViewMode = mode;
+            if (mode === 'grid') {
+                document.getElementById("view-calendar-grid").classList.remove("hidden");
+                document.getElementById("view-timeline-stream").classList.add("hidden");
+                document.getElementById("tab-grid").className = "px-3 py-1 rounded-lg font-bold bg-slate-800 text-amber-300 flex items-center gap-1.5 transition";
+                document.getElementById("tab-stream").className = "px-3 py-1 rounded-lg font-semibold text-slate-400 hover:text-white flex items-center gap-1.5 transition";
+                renderCalendarGrid();
+            } else {
+                document.getElementById("view-calendar-grid").classList.add("hidden");
+                document.getElementById("view-timeline-stream").classList.remove("hidden");
+                document.getElementById("tab-stream").className = "px-3 py-1 rounded-lg font-bold bg-slate-800 text-amber-300 flex items-center gap-1.5 transition";
+                document.getElementById("tab-grid").className = "px-3 py-1 rounded-lg font-semibold text-slate-400 hover:text-white flex items-center gap-1.5 transition";
+                renderTimelineStream();
+            }
+            lucide.createIcons();
+        }
+
+        function renderCalendarGrid() {
             const container = document.getElementById("calendar-cells");
             container.innerHTML = "";
 
@@ -810,8 +994,6 @@
             const daysInMonth = new Date(currentYear, currentMonth, 0).getDate();
             const daysInPrevMonth = new Date(currentYear, currentMonth - 1, 0).getDate();
             const todayStr = formatDateStr(new Date());
-
-            let monthTradesCount = 0;
 
             // Prev month padding
             for (let i = firstDayIndex - 1; i >= 0; i--) {
@@ -830,11 +1012,11 @@
                 const isToday = (dateStr === todayStr);
 
                 const cell = document.createElement("div");
-                cell.className = `calendar-day p-1.5 flex flex-col justify-between cursor-pointer ${isWk ? "weekend" : ""} ${isToday ? "today" : ""}`;
+                cell.className = `calendar-day p-1.5 sm:p-2 flex flex-col justify-between cursor-pointer ${isWk ? "weekend" : ""} ${isToday ? "today" : ""}`;
 
                 let header = `<div class="flex items-center justify-between">
-                    <span class="text-xs font-semibold ${isToday ? "text-amber-400 font-bold" : "text-slate-300"}">${day}</span>
-                    ${isToday ? `<span class="text-[9px] bg-amber-500/20 text-amber-300 px-1 rounded">Today</span>` : ""}
+                    <span class="text-xs font-bold ${isToday ? "text-amber-400 font-extrabold" : "text-slate-300"}">${day}</span>
+                    ${isToday ? `<span class="text-[9px] bg-amber-500/20 text-amber-300 px-1.5 py-0.2 rounded-full font-bold">Today</span>` : ""}
                 </div>`;
 
                 let badges = `<div class="space-y-1 mt-1">`;
@@ -842,15 +1024,14 @@
                 const holiday = NSE_HOLIDAYS[dateStr];
 
                 if (trades.length > 0) {
-                    monthTradesCount++;
                     trades.forEach(t => {
                         badges += `
-                            <div class="px-1.5 py-1 rounded text-[10px] sm:text-[11px] font-medium leading-tight ${t.isShifted ? "badge-trade-shifted" : "badge-trade"} flex flex-col shadow-sm">
+                            <div class="px-1.5 py-1 rounded-md text-[10px] sm:text-[11px] font-bold leading-tight ${t.isShifted ? "badge-trade-shifted" : "badge-trade"} flex flex-col">
                                 <div class="flex items-center justify-between">
-                                    <span class="font-bold">🎯 Ep-3 Trade</span>
+                                    <span>🎯 Ep-3</span>
                                     ${t.isShifted ? `<span class="text-[8px] uppercase px-1 rounded bg-amber-400/20 text-amber-300">Shift</span>` : ""}
                                 </div>
-                                <span class="text-[9px] opacity-90 truncate mt-0.5">${t.isShifted ? t.reason.split(":")[0] : "Trayodashi"}</span>
+                                <span class="text-[9px] opacity-90 truncate mt-0.5 font-normal">${t.isShifted ? t.reason.split(":")[0] : "Trayodashi"}</span>
                             </div>
                         `;
                     });
@@ -858,7 +1039,7 @@
 
                 if (holiday) {
                     badges += `
-                        <div class="px-1.5 py-0.5 rounded text-[9px] sm:text-[10px] leading-tight badge-holiday truncate" title="${holiday}">
+                        <div class="px-1.5 py-0.5 rounded-md text-[9px] sm:text-[10px] leading-tight badge-holiday truncate" title="${holiday}">
                             🛑 ${holiday}
                         </div>
                     `;
@@ -874,7 +1055,7 @@
                 container.appendChild(cell);
             }
 
-            // Fill remainder
+            // Remainder padding
             const total = firstDayIndex + daysInMonth;
             const remaining = total > 35 ? 42 - total : 35 - total;
             for (let d = 1; d <= remaining; d++) {
@@ -884,11 +1065,52 @@
                 container.appendChild(cell);
             }
 
-            document.getElementById("month-trade-count").innerHTML = `
-                <span class="font-semibold text-slate-200">${getMonthName(currentMonth)} ${currentYear}</span>: 
-                <span class="text-emerald-400 font-bold">${monthTradesCount} Actionable Trades</span> 
-                (2 Shukla + 2 Krishna Paksha)
-            `;
+            lucide.createIcons();
+        }
+
+        function renderTimelineStream() {
+            document.getElementById("stream-month-title").textContent = `${getMonthName(currentMonth)} ${currentYear}`;
+            const container = document.getElementById("timeline-stream-container");
+            container.innerHTML = "";
+
+            const monthPrefix = `${currentYear}-${String(currentMonth).padStart(2, '0')}`;
+            const monthTrades = ALL_ACTIONABLE_TRADES.filter(t => t.dateStr.startsWith(monthPrefix));
+
+            if (monthTrades.length === 0) {
+                container.innerHTML = `<div class="p-6 text-center text-xs text-slate-400">No trades calculated for this month.</div>`;
+                return;
+            }
+
+            monthTrades.forEach((t, idx) => {
+                const d = new Date(t.dateStr);
+                const card = document.createElement("div");
+                card.className = "p-3.5 rounded-xl bg-space-850 hover:bg-space-800 border border-white/[0.08] cursor-pointer transition flex items-center justify-between group";
+                card.onclick = () => openDatePlan(t.dateStr);
+                card.innerHTML = `
+                    <div class="flex items-center space-x-3.5">
+                        <div class="w-10 h-10 rounded-xl ${t.isShifted ? 'bg-amber-500/10 text-amber-300 border border-amber-500/30' : 'bg-emerald-500/10 text-emerald-300 border border-emerald-500/30'} flex flex-col items-center justify-center font-mono">
+                            <span class="text-[9px] uppercase font-bold">#${idx + 1}</span>
+                            <span class="text-sm font-extrabold leading-none">${d.getDate()}</span>
+                        </div>
+                        <div>
+                            <div class="flex items-center space-x-2">
+                                <span class="text-xs font-bold text-white group-hover:text-purple-300 transition font-mono">${formatDateFriendly(t.dateStr)}</span>
+                                <span class="text-[11px] text-slate-400 font-semibold">(${getDayName(d.getDay())})</span>
+                                ${t.isShifted ? `<span class="px-1.5 py-0.2 rounded text-[9px] bg-amber-950/60 text-amber-300 border border-amber-800/60 font-semibold">Weekend/Holiday Shift</span>` : ""}
+                            </div>
+                            <p class="text-[11px] text-slate-300 mt-0.5">${t.paksha} • ${t.timing}</p>
+                            <p class="text-[10px] text-amber-400/90 mt-0.5">${t.reason}</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <button class="px-3 py-1.5 rounded-lg bg-purple-600/20 hover:bg-purple-600 text-purple-300 hover:text-white text-xs font-bold border border-purple-500/30 transition flex items-center gap-1">
+                            <span>Open Setup</span>
+                            <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+                        </button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
 
             lucide.createIcons();
         }
@@ -901,42 +1123,42 @@
             const alertBox = document.getElementById("today-alert-content");
             if (todayTrades.length > 0) {
                 alertBox.innerHTML = `
-                    <div class="p-3 rounded-lg bg-emerald-950/40 border border-emerald-500/50 text-emerald-300 text-xs space-y-1">
-                        <div class="font-bold flex items-center justify-between">
-                            <span>⚡ TODAY IS AN ACTION TRADE DAY!</span>
-                            <span class="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-200 text-[10px]">Exit: 15:00</span>
+                    <div class="p-3.5 rounded-xl bg-gradient-to-r from-emerald-950/60 to-emerald-900/40 border border-emerald-500/60 text-emerald-300 text-xs space-y-1.5 shadow-lg shadow-emerald-950/30">
+                        <div class="font-extrabold flex items-center justify-between text-white">
+                            <span class="flex items-center gap-1.5">⚡ ACTIVE TRADE SESSION TODAY!</span>
+                            <span class="px-2 py-0.5 rounded-full bg-emerald-500/30 text-emerald-200 text-[10px] font-mono">Exit 15:00</span>
                         </div>
-                        <p class="text-[11px] text-slate-300">${todayTrades[0].paksha} - ${todayTrades[0].timing}</p>
-                        <button onclick="openDatePlan('${todayStr}')" class="mt-2 w-full py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded font-semibold text-xs transition">
-                            Open Today's Checklist & Levels
+                        <p class="text-[11px] text-slate-200 font-medium">${todayTrades[0].paksha} • ${todayTrades[0].timing}</p>
+                        <button onclick="openDatePlan('${todayStr}')" class="mt-2 w-full py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 rounded-xl font-extrabold text-xs transition shadow-md">
+                            Launch Today's Setup & 15m Calculator &rarr;
                         </button>
                     </div>
                 `;
             } else {
                 alertBox.innerHTML = `
-                    <div class="p-2.5 rounded-lg bg-slate-800/40 border border-slate-700/50 text-slate-400 text-xs flex items-center gap-2">
-                        <i data-lucide="check-circle" class="w-4 h-4 text-slate-500"></i>
-                        <span>No astrology trade scheduled today. See next dates below.</span>
+                    <div class="p-3 rounded-xl bg-space-850 border border-white/[0.06] text-slate-400 text-xs flex items-center gap-2.5">
+                        <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-400"></i>
+                        <span>No astrology session scheduled today. Next dates listed below.</span>
                     </div>
                 `;
             }
 
-            const upcoming = ALL_ACTIONABLE_TRADES.filter(t => t.dateStr >= todayStr).slice(0, 8);
+            const upcoming = ALL_ACTIONABLE_TRADES.filter(t => t.dateStr >= todayStr).slice(0, 4);
             const listContainer = document.getElementById("upcoming-list");
             let html = "";
             upcoming.forEach(t => {
                 html += `
-                    <div onclick="openDatePlan('${t.dateStr}')" class="p-2.5 rounded-lg bg-[#0f172a] hover:bg-[#1a243b] border border-[#232f48] cursor-pointer transition flex items-center justify-between group">
+                    <div onclick="openDatePlan('${t.dateStr}')" class="p-2.5 rounded-xl bg-space-850 hover:bg-space-800 border border-white/[0.06] cursor-pointer transition flex items-center justify-between group">
                         <div class="space-y-0.5">
                             <div class="flex items-center space-x-2">
-                                <span class="text-xs font-bold text-slate-100 group-hover:text-purple-300 transition font-mono">${t.dateStr}</span>
-                                <span class="text-[11px] text-slate-400">(${getDayName(new Date(t.dateStr).getDay())})</span>
-                                ${t.isShifted ? `<span class="px-1 py-0.2 rounded text-[9px] bg-amber-950/60 text-amber-400 border border-amber-800/50">Shifted</span>` : ""}
+                                <span class="text-xs font-bold text-white group-hover:text-purple-300 transition font-mono">${t.dateStr}</span>
+                                <span class="text-[11px] text-slate-400 font-semibold">(${getDayName(new Date(t.dateStr).getDay())})</span>
+                                ${t.isShifted ? `<span class="px-1.5 py-0.2 rounded text-[9px] bg-amber-950/60 text-amber-300 border border-amber-800/60 font-semibold">Shift</span>` : ""}
                             </div>
                             <p class="text-[10px] text-slate-400 truncate max-w-[210px]">${t.paksha} [${t.timing}]</p>
                         </div>
-                        <span class="text-xs font-semibold ${t.isShifted ? 'text-amber-400' : 'text-emerald-400'} flex items-center gap-1">
-                            <i data-lucide="crosshair" class="w-3.5 h-3.5"></i> Action
+                        <span class="text-xs font-bold ${t.isShifted ? 'text-amber-400' : 'text-emerald-400'} flex items-center gap-1 font-mono">
+                            Action <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
                         </span>
                     </div>
                 `;
@@ -995,6 +1217,110 @@
                 sEntry.textContent = `-- (-${buffer} pts)`;
                 sSl.textContent = `-- (+${buffer} pts)`;
             }
+
+            drawCandlestickPreview(c1H, c1L, c2H, c2L, buffer);
+        }
+
+        // Live Candlestick SVG Visualizer
+        function drawCandlestickPreview(c1H, c1L, c2H, c2L, buffer) {
+            const svg = document.getElementById("candlestick-svg");
+            const badge = document.getElementById("chart-pattern-badge");
+
+            if (isNaN(c1H) || isNaN(c1L) || isNaN(c2H) || isNaN(c2L)) {
+                // Default placeholder graphic
+                svg.innerHTML = `
+                    <text x="250" y="65" fill="#64748b" font-size="12" text-anchor="middle" font-family="'Plus Jakarta Sans'">
+                        Enter Candle 1 & Candle 2 prices to render setup chart
+                    </text>
+                `;
+                badge.className = "text-[10px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 font-mono";
+                badge.textContent = "Waiting for candle data";
+                return;
+            }
+
+            const minVal = Math.min(c1L, c2L) - buffer - 15;
+            const maxVal = Math.max(c1H, c2H) + buffer + 15;
+            const range = maxVal - minVal;
+
+            function getY(val) {
+                return 110 - ((val - minVal) / range) * 90;
+            }
+
+            const isHigherHigh = (c2H > c1H);
+            const isLowerLow = (c2L < c1L);
+
+            if (isHigherHigh) {
+                badge.className = "text-[10px] px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/40";
+                badge.textContent = "🟢 HIGHER HIGH (BUY TRIGGER ACTIVE)";
+            } else if (isLowerLow) {
+                badge.className = "text-[10px] px-2.5 py-0.5 rounded-full bg-rose-500/20 text-rose-300 font-bold border border-rose-500/40";
+                badge.textContent = "🔴 LOWER LOW (SELL TRIGGER ACTIVE)";
+            } else {
+                badge.className = "text-[10px] px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-bold border border-amber-500/40";
+                badge.textContent = "⚡ INSIDE / RANGEBOUND";
+            }
+
+            // Candle 1 & 2 Coordinates
+            const c1YHigh = getY(c1H);
+            const c1YLow = getY(c1L);
+            const c1BodyTop = c1YHigh + (c1YLow - c1YHigh) * 0.2;
+            const c1BodyBottom = c1YLow - (c1YLow - c1YHigh) * 0.2;
+
+            const c2YHigh = getY(c2H);
+            const c2YLow = getY(c2L);
+            const c2BodyTop = c2YHigh + (c2YLow - c2YHigh) * 0.2;
+            const c2BodyBottom = c2YLow - (c2YLow - c2YHigh) * 0.2;
+
+            const buyEntryY = getY(c2H + buffer);
+            const buySlY = getY(c2L - buffer);
+
+            svg.innerHTML = `
+                <!-- Background Gridlines -->
+                <line x1="20" y1="${buyEntryY}" x2="480" y2="${buyEntryY}" stroke="#10b981" stroke-width="1.5" stroke-dasharray="4,4"/>
+                <text x="480" y="${buyEntryY - 4}" fill="#10b981" font-size="10" font-family="'JetBrains Mono'" text-anchor="end" font-weight="bold">BUY ENTRY: ${(c2H + buffer).toFixed(1)}</text>
+
+                <line x1="20" y1="${buySlY}" x2="480" y2="${buySlY}" stroke="#f43f5e" stroke-width="1.5" stroke-dasharray="4,4"/>
+                <text x="480" y="${buySlY + 12}" fill="#f43f5e" font-size="10" font-family="'JetBrains Mono'" text-anchor="end" font-weight="bold">STOP LOSS: ${(c2L - buffer).toFixed(1)}</text>
+
+                <!-- Candle 1 -->
+                <line x1="160" y1="${c1YHigh}" x2="160" y2="${c1YLow}" stroke="#10b981" stroke-width="2"/>
+                <rect x="145" y="${c1BodyTop}" width="30" height="${Math.max(c1BodyBottom - c1BodyTop, 6)}" fill="#10b981" rx="2"/>
+                <text x="160" y="125" fill="#94a3b8" font-size="10" font-family="'JetBrains Mono'" text-anchor="middle">Candle 1 (15m)</text>
+
+                <!-- Candle 2 -->
+                <line x1="320" y1="${c2YHigh}" x2="320" y2="${c2YLow}" stroke="${isHigherHigh ? '#10b981' : '#f43f5e'}" stroke-width="2"/>
+                <rect x="305" y="${c2BodyTop}" width="30" height="${Math.max(c2BodyBottom - c2BodyTop, 6)}" fill="${isHigherHigh ? '#10b981' : '#f43f5e'}" rx="2"/>
+                <text x="320" y="125" fill="#94a3b8" font-size="10" font-family="'JetBrains Mono'" text-anchor="middle">Candle 2 (15m)</text>
+            `;
+        }
+
+        // 1-Click Copy Trade Plan
+        function copyTradePlan() {
+            const sym = document.getElementById("calc-symbol").value;
+            const bEntry = document.getElementById("res-buy-entry").textContent;
+            const bSl = document.getElementById("res-buy-sl").textContent;
+            const sEntry = document.getElementById("res-sell-entry").textContent;
+            const sSl = document.getElementById("res-sell-sl").textContent;
+
+            const text = `🎯 ASTROSTOCK EP-3 TRADE PLAN (${selectedDateStr})
+Symbol: ${sym}
+Buy Order: ${bEntry} | SL: ${bSl}
+Sell Order: ${sEntry} | SL: ${sSl}
+Reversal Plan: If 1st trade SL hit, enter reverse on 2 opposite candles
+Hard Square-off: 15:00 Sharp`;
+
+            navigator.clipboard.writeText(text).then(() => {
+                showToast("Trade plan copied to clipboard!");
+            });
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById("toast");
+            document.getElementById("toast-text").textContent = msg;
+            toast.classList.remove("opacity-0", "translate-y-3", "pointer-events-none");
+            setTimeout(() => {
+                toast.classList.add("opacity-0", "translate-y-3", "pointer-events-none");
+            }, 2500);
         }
 
         function renderDateJournals(dateStr) {
@@ -1004,24 +1330,24 @@
                 box.innerHTML = `<div class="text-[11px] text-slate-500 italic">No trade logs saved for this date.</div>`;
                 return;
             }
-            let html = `<div class="text-[11px] font-semibold text-slate-400 mb-1">Saved Trades for this Date:</div>`;
+            let html = `<div class="text-[11px] font-bold text-slate-400 mb-1">Saved Trades for this Date:</div>`;
             list.forEach(j => {
                 const isProfit = (j.points_pl >= 0);
                 html += `
-                    <div class="p-2.5 rounded bg-slate-800/60 border border-slate-700/60 text-xs flex items-center justify-between">
+                    <div class="p-2.5 rounded-xl bg-space-850 border border-white/[0.08] text-xs flex items-center justify-between">
                         <div>
                             <div class="flex items-center space-x-2">
                                 <span class="font-bold text-white">${j.symbol}</span>
-                                <span class="px-1.5 py-0.5 rounded text-[10px] bg-slate-700 text-slate-300 font-mono">${j.trade_type}</span>
+                                <span class="px-2 py-0.5 rounded-md text-[10px] bg-space-800 text-slate-300 font-mono">${j.trade_type}</span>
                                 <span class="text-slate-400 text-[11px]">Entry: ${j.entry_price || "--"} | Exit: ${j.exit_price || "--"}</span>
                             </div>
-                            ${j.notes ? `<p class="text-[11px] text-slate-300 mt-0.5">${j.notes}</p>` : ""}
+                            ${j.notes ? `<p class="text-[11px] text-slate-300 mt-1">${j.notes}</p>` : ""}
                         </div>
                         <div class="text-right">
-                            <span class="font-bold font-mono text-sm ${isProfit ? 'text-emerald-400' : 'text-rose-400'}">
+                            <span class="font-extrabold font-mono text-sm ${isProfit ? 'text-emerald-400' : 'text-rose-400'}">
                                 ${isProfit ? '+' : ''}${j.points_pl} pts
                             </span>
-                            <div class="text-[10px] text-slate-400">${j.outcome}</div>
+                            <div class="text-[10px] text-slate-400 font-medium">${j.outcome}</div>
                         </div>
                     </div>
                 `;
@@ -1041,18 +1367,18 @@
             const wr = list.length > 0 ? ((wins / list.length) * 100).toFixed(0) : 0;
 
             let html = `
-                <div class="grid grid-cols-3 gap-3 p-3 bg-slate-800/60 rounded-xl border border-slate-700 mb-3 text-center">
+                <div class="grid grid-cols-3 gap-3 p-3.5 bg-space-850 rounded-2xl border border-white/[0.08] mb-3 text-center">
                     <div>
-                        <div class="text-[10px] text-slate-400 uppercase">Trades</div>
-                        <div class="text-base font-bold text-white">${list.length}</div>
+                        <div class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Total Trades</div>
+                        <div class="text-lg font-extrabold text-white">${list.length}</div>
                     </div>
                     <div>
-                        <div class="text-[10px] text-slate-400 uppercase">Net Points</div>
-                        <div class="text-base font-bold ${total >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${total >= 0 ? '+' : ''}${total.toFixed(1)} pts</div>
+                        <div class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Net Points P&L</div>
+                        <div class="text-lg font-extrabold ${total >= 0 ? 'text-emerald-400' : 'text-rose-400'} font-mono">${total >= 0 ? '+' : ''}${total.toFixed(1)} pts</div>
                     </div>
                     <div>
-                        <div class="text-[10px] text-slate-400 uppercase">Win Rate</div>
-                        <div class="text-base font-bold text-purple-400">${wr}%</div>
+                        <div class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Win Rate</div>
+                        <div class="text-lg font-extrabold text-purple-400 font-mono">${wr}%</div>
                     </div>
                 </div>
             `;
@@ -1060,17 +1386,17 @@
             list.forEach(j => {
                 const isProfit = (j.points_pl >= 0);
                 html += `
-                    <div class="p-2.5 rounded-lg bg-slate-800/40 border border-slate-700/50 flex items-center justify-between">
+                    <div class="p-3 rounded-xl bg-space-850 border border-white/[0.06] flex items-center justify-between">
                         <div>
                             <div class="flex items-center space-x-2">
                                 <span class="font-mono font-bold text-slate-200">${j.date}</span>
-                                <span class="text-xs font-semibold text-purple-300">${j.symbol}</span>
-                                <span class="px-1.5 py-0.5 rounded text-[10px] bg-slate-700 text-slate-300">${j.trade_type}</span>
+                                <span class="text-xs font-bold text-purple-300">${j.symbol}</span>
+                                <span class="px-2 py-0.5 rounded-md text-[10px] bg-space-800 text-slate-300 font-mono">${j.trade_type}</span>
                             </div>
-                            <p class="text-xs text-slate-400 mt-0.5">${j.notes || "No notes"}</p>
+                            <p class="text-xs text-slate-400 mt-1">${j.notes || "No notes"}</p>
                         </div>
                         <div class="text-right">
-                            <div class="font-bold font-mono text-sm ${isProfit ? 'text-emerald-400' : 'text-rose-400'}">
+                            <div class="font-extrabold font-mono text-sm ${isProfit ? 'text-emerald-400' : 'text-rose-400'}">
                                 ${isProfit ? '+' : ''}${j.points_pl} pts
                             </div>
                             <span class="text-[10px] text-slate-400">${j.outcome}</span>
